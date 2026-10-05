@@ -521,6 +521,7 @@ header p{
 .profile-label{font-size:14px;font-weight:700;color:var(--muted)}
 .seg{display:inline-flex;flex-wrap:nowrap;gap:4px;padding:4px;border-radius:999px;background:var(--surface-2);border:1px solid var(--border)}
 .seg-btn{border:0;background:transparent;padding:8px 14px;border-radius:999px;font-weight:700;font-size:14px;cursor:pointer;color:var(--text);transition:.15s}
+.field .seg{align-self:flex-start}
 .seg-btn:hover{background:var(--brand-soft)}
 .seg-btn.active{background:var(--brand);color:#fff}
 .profile-ref{font-size:13px;font-weight:700;color:var(--brand);font-variant-numeric:tabular-nums}
@@ -702,9 +703,24 @@ footer{text-align:center;color:var(--muted);padding:10px 16px 30px;font-size:13p
             </div>
 
             <div data-pane="manual" hidden>
+                <div class="field" style="margin-bottom:12px">Portion measured by
+                    <div class="seg" id="cfUnitSeg" role="group" aria-label="Portion measured by">
+                        <button type="button" class="seg-btn active" data-unit="size" aria-pressed="true">🍽️ Serving size</button>
+                        <button type="button" class="seg-btn" data-unit="grams" aria-pressed="false">⚖️ Grams</button>
+                    </div>
+                </div>
                 <div class="form-grid">
-                    <label class="field">Calories (kcal) per serving
+                    <label class="field" data-unit-pane="size">Calories (kcal) per serving
                         <input id="cfCal" type="number" min="0" max="3000" step="5" inputmode="numeric" placeholder="e.g. 350">
+                    </label>
+                    <label class="field" data-unit-pane="size">Serving size you ate
+                        <select id="cfManSize"></select>
+                    </label>
+                    <label class="field" data-unit-pane="grams" hidden>Calories (kcal) per 100 g
+                        <input id="cfCal100" type="number" min="0" max="900" step="1" inputmode="numeric" placeholder="e.g. 250">
+                    </label>
+                    <label class="field" data-unit-pane="grams" hidden>Amount you ate (g)
+                        <input id="cfGrams" type="number" min="1" max="2000" step="1" inputmode="numeric" placeholder="e.g. 150">
                     </label>
                     <label class="field">Category
                         <select id="cfCat"></select>
@@ -714,7 +730,7 @@ footer{text-align:center;color:var(--muted);padding:10px 16px 30px;font-size:13p
                     <label><input type="checkbox" id="cfFried"> Fried / oily</label>
                     <label><input type="checkbox" id="cfSweet"> High in sugar</label>
                 </div>
-                <p class="ai-status" style="margin-top:10px">Tip: calories are usually printed on the packaging label (“Energy … kcal”).</p>
+                <p class="ai-status" id="cfUnitTip" style="margin-top:10px">Tip: use the “per serving” energy value on the packaging label, then pick how big your portion was.</p>
             </div>
 
             <div class="preview" id="cfPreview">
@@ -1401,8 +1417,28 @@ fillSelect($("cfSize"), sizes, s => s.label);
 fillSelect($("cfAiSize"), sizes, s => s.label);
 fillSelect($("cfCook"), cooks, c => c.label);
 fillSelect($("cfCat"), catDefs, c => `${c.emoji} ${c.label}`);
+$("cfCat").value = "Makanan";
 $("cfSize").value = "sederhana";
 $("cfAiSize").value = "sederhana";
+fillSelect($("cfManSize"), sizes, s => s.label);
+$("cfManSize").value = "sederhana";
+
+/* Manual entry: measure by serving size OR grams (only one at a time) */
+let manualUnit = "size";
+const UNIT_TIPS = {size:"Tip: use the “per serving” energy value on the packaging label, then pick how big your portion was.", grams:"Tip: labels usually show energy “per 100 g”. Weigh your portion or use the pack weight."};
+$("cfUnitSeg").addEventListener("click", e => {
+    const b = e.target.closest("[data-unit]");
+    if(!b || b.dataset.unit === manualUnit) return;
+    manualUnit = b.dataset.unit;
+    document.querySelectorAll("#cfUnitSeg [data-unit]").forEach(x => {
+        const on = x.dataset.unit === manualUnit;
+        x.classList.toggle("active", on);
+        x.setAttribute("aria-pressed", on);
+    });
+    document.querySelectorAll("[data-unit-pane]").forEach(p => { p.hidden = p.dataset.unitPane !== manualUnit; });
+    $("cfUnitTip").textContent = UNIT_TIPS[manualUnit];
+    updateDraft();
+});
 
 /* Guess the food type from the name (for the estimate tab) */
 function guessType(name){
@@ -1429,7 +1465,7 @@ let typeTouched = false;
 let cookTouched = false;
 $("cfType").addEventListener("change", () => { typeTouched = true; syncCookState(); updateDraft(); });
 $("cfCook").addEventListener("change", () => { cookTouched = true; updateDraft(); });
-["cfSize","cfCal","cfCat","cfFried","cfSweet","cfAiSize"].forEach(id => {
+["cfSize","cfCal","cfCal100","cfGrams","cfManSize","cfCat","cfFried","cfSweet","cfAiSize"].forEach(id => {
     $(id).addEventListener("input", updateDraft);
     $(id).addEventListener("change", updateDraft);
 });
@@ -1487,11 +1523,23 @@ function currentDraft(){
                 src:"est", note:`Estimate by type: ${type.label.toLowerCase()}, ${size.short} size, ${cook.label.toLowerCase()}.`};
     }
     if(activeTab === "manual"){
-        const calStr = $("cfCal").value;
-        if(calStr === "") return {name, cal:null, cat:$("cfCat").value, emoji:catEmoji[$("cfCat").value], t:"", note:"Enter the number of calories."};
-        const cal = Math.round(Number(calStr));
+        const cat = $("cfCat").value, emoji = catEmoji[cat];
         const t = ($("cfFried").checked ? "g" : "") + ($("cfSweet").checked ? "m" : "");
-        return {name, cal, cat:$("cfCat").value, emoji:catEmoji[$("cfCat").value], t, src:"manual", note:"Calories entered by you."};
+        if(manualUnit === "grams"){
+            const c100Str = $("cfCal100").value, gStr = $("cfGrams").value;
+            if(c100Str === "" || gStr === "") return {name, cal:null, cat, emoji, t:"", note:"Enter the calories per 100 g and how many grams you ate."};
+            const c100 = Number(c100Str), g = Math.round(Number(gStr));
+            if(!(c100 >= 0 && c100 <= 900)) return {name, cal:null, cat, emoji, t:"", note:"Calories per 100 g can’t be more than 900 kcal (pure fat is about 900)."};
+            if(!(g >= 1 && g <= 2000)) return {name, cal:null, cat, emoji, t:"", note:"Amount must be between 1 and 2,000 g."};
+            const cal = Math.round(c100 * g / 100);
+            return {name: name ? `${name} (${g} g)` : name, cal, cat, emoji, t, src:"manual", note:`Entered by you: ${c100} kcal per 100 g × ${g} g.`};
+        }
+        const calStr = $("cfCal").value;
+        if(calStr === "") return {name, cal:null, cat, emoji, t:"", note:"Enter the calories per serving."};
+        const base = Math.round(Number(calStr));
+        const sz = sizes.find(x => x.id === $("cfManSize").value) || sizes[1];
+        const cal = Math.round(base * sz.m / 5) * 5;
+        return {name, cal, cat, emoji, t, src:"manual", note:`Entered by you: ${base} kcal per serving, ${sz.short} size.`};
     }
     /* ai */
     const key = name + "|" + $("cfAiSize").value;
@@ -1544,7 +1592,7 @@ function addCustomFood(){
     saveCustom();
     saveSelection();
     /* reset form */
-    $("cfName").value = ""; $("cfCal").value = "";
+    $("cfName").value = ""; $("cfCal").value = ""; $("cfCal100").value = ""; $("cfGrams").value = "";
     $("cfFried").checked = false; $("cfSweet").checked = false;
     typeTouched = false; cookTouched = false;
     aiDraft = null; aiKey = "";
