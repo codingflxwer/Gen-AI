@@ -525,6 +525,20 @@ header p{
 .seg-btn:hover{background:var(--brand-soft)}
 .seg-btn.active{background:var(--brand);color:#fff}
 .profile-ref{font-size:13px;font-weight:700;color:var(--brand);font-variant-numeric:tabular-nums}
+/* ---------- DROPDOWN VIEW ---------- */
+.quick-mode .search-wrap,.quick-mode #categories,.quick-mode #foodGrid,.quick-mode #emptyState{display:none!important}
+.quick-mode .add-hint{margin-top:14px}
+.quick-view{display:flex;flex-direction:column;gap:10px;margin:16px 0 4px}
+.quick-select{font-size:16px!important;padding:14px!important;background:var(--surface-2)!important}
+.quick-hint{margin:0;font-size:13px;color:var(--muted)}
+.quick-title{margin:8px 0 0;font-size:16px}
+.quick-list{display:flex;flex-direction:column;border:1px solid var(--border);border-radius:16px;overflow:hidden;background:var(--surface)}
+.quick-row{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:10px 14px;border-top:1px solid var(--border)}
+.quick-row:first-child{border-top:0}
+.quick-row .q-emoji{font-size:26px}
+.quick-row .q-name{font-weight:700;font-size:14px;line-height:1.3}
+.quick-row .q-kcal{display:block;font-size:12.5px;color:var(--brand);font-weight:700;font-variant-numeric:tabular-nums}
+.quick-empty{padding:16px;font-size:14px;color:var(--muted);text-align:center}
 @media (max-width:480px){.seg{width:100%}.seg-btn{flex:1;padding:8px 6px;font-size:13px;white-space:nowrap}}
 
 /* ---------- CUSTOM FOOD ---------- */
@@ -651,6 +665,14 @@ footer{text-align:center;color:var(--muted);padding:10px 16px 30px;font-size:13p
             <span class="profile-ref" id="profileRef">2,000 kcal/day</span>
         </div>
 
+        <div class="profile-row" role="group" aria-label="Choose how to browse foods">
+            <span class="profile-label">🧭 View:</span>
+            <div class="seg" id="viewSeg">
+                <button type="button" class="seg-btn active" data-view="cards" aria-pressed="true">🗂️ Cards</button>
+                <button type="button" class="seg-btn" data-view="list" aria-pressed="false">🔽 Dropdown</button>
+            </div>
+        </div>
+
         <div class="search-wrap">
             <input id="search" class="search-box" type="search" placeholder="🔎 Search foods… (e.g. rice, tea, kuih)" aria-label="Search foods" autocomplete="off">
             <button class="search-clear" id="searchClear" aria-label="Clear search">✕</button>
@@ -742,6 +764,15 @@ footer{text-align:center;color:var(--muted);padding:10px 16px 30px;font-size:13p
                 </div>
                 <button class="main-btn" id="cfAdd" disabled>➕ Add & select</button>
             </div>
+        </div>
+
+        <div class="quick-view" id="quickView" hidden>
+            <label class="field">Choose a food to add
+                <select id="quickSelect" class="quick-select"></select>
+            </label>
+            <p class="quick-hint">Each pick adds 1 serving. Use − / + below to change it.</p>
+            <h3 class="quick-title">Your selection</h3>
+            <div class="quick-list" id="quickList" aria-live="polite"></div>
         </div>
 
         <div class="categories" id="categories" role="tablist" aria-label="Food categories"></div>
@@ -1377,6 +1408,7 @@ function updateCount(){
     $("analyseBtn").disabled = t.types === 0;
     document.querySelector(".summary-bar").classList.toggle("idle", t.types === 0);
     $("clearBtn").disabled = t.types === 0;
+    renderQuickList();
 }
 
 function clearSelection(){
@@ -1394,6 +1426,7 @@ $("clearBtn").addEventListener("click", clearSelection);
 
 function rebuildAll(){
     indexFoods();
+    buildQuickSelect();
     buildGrid();
     renderCategories();
     applyFilter();
@@ -2319,6 +2352,60 @@ $("genderSeg").addEventListener("click", e => {
 });
 renderGender();
 
+/* ---------------- DROPDOWN VIEW ---------------- */
+const VIEW_KEY = "afac-view";
+function buildQuickSelect(){
+    const groups = catDefs.map(c => {
+        const items = foods.filter(f => !f.custom && f.cat === c.id);
+        return items.length ? `<optgroup label="${c.emoji} ${esc(c.label)}">${items.map(f => `<option value="${f.id}">${esc(f.emoji)} ${esc(f.name)} · ${fmt(f.cal)} kcal</option>`).join("")}</optgroup>` : "";
+    }).join("");
+    const mine = foods.filter(f => f.custom);
+    const mineGroup = mine.length ? `<optgroup label="⭐ My foods">${mine.map(f => `<option value="${f.id}">${esc(f.emoji)} ${esc(f.name)} · ${fmt(f.cal)} kcal</option>`).join("")}</optgroup>` : "";
+    $("quickSelect").innerHTML = `<option value="">Choose a food…</option>` + mineGroup + groups;
+}
+function renderQuickList(){
+    const ids = Object.keys(selectedQty).filter(id => F(id));
+    $("quickList").innerHTML = ids.length ? ids.map(id => {
+        const f = F(id), q = selectedQty[id];
+        return `<div class="quick-row">
+            <span class="q-emoji" aria-hidden="true">${esc(f.emoji)}</span>
+            <span class="q-name">${esc(f.name)}<span class="q-kcal">${fmt(f.cal)} kcal × ${q} = ${fmt(f.cal * q)} kcal</span></span>
+            <span class="qty-control">
+                <button class="qty-btn" data-qid="${id}" data-qact="dec" aria-label="Decrease ${esc(f.name)}">−</button>
+                <span class="qty-val">${q}</span>
+                <button class="qty-btn" data-qid="${id}" data-qact="inc" aria-label="Increase ${esc(f.name)}" ${q >= MAX_QTY ? "disabled" : ""}>+</button>
+            </span>
+        </div>`;
+    }).join("") : `<div class="quick-empty">Nothing selected yet. Pick a food from the list above.</div>`;
+}
+$("quickSelect").addEventListener("change", e => {
+    const id = e.target.value;
+    if(!id || !F(id)) return;
+    changeQty(id, 1, false);
+    toast(`${F(id).name} added ✅`);
+    e.target.value = "";
+});
+$("quickList").addEventListener("click", e => {
+    const b = e.target.closest("[data-qact]");
+    if(!b) return;
+    changeQty(b.dataset.qid, b.dataset.qact === "inc" ? 1 : -1, false);
+});
+function setView(view){
+    const section = $("pickTitle").closest("section");
+    section.classList.toggle("quick-mode", view === "list");
+    $("quickView").hidden = view !== "list";
+    document.querySelectorAll("#viewSeg [data-view]").forEach(b => {
+        const on = b.dataset.view === view;
+        b.classList.toggle("active", on);
+        b.setAttribute("aria-pressed", on);
+    });
+    try{ localStorage.setItem(VIEW_KEY, view); }catch(e){}
+}
+$("viewSeg").addEventListener("click", e => {
+    const b = e.target.closest("[data-view]");
+    if(b) setView(b.dataset.view);
+});
+
 /* ---------------- INIT ---------------- */
 loadCustom();
 indexFoods();
@@ -2329,6 +2416,9 @@ renderCategories();
 applyFilter();
 updateCount();
 updateDraft();
+buildQuickSelect();
+renderQuickList();
+try{ setView(localStorage.getItem(VIEW_KEY) === "list" ? "list" : "cards"); }catch(e){ setView("cards"); }
 startQuiz();
 renderHistory();
 </script>
