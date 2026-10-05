@@ -1,0 +1,2242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="index,follow">
+<meta name="description" content="Pick foods, estimate calories and get balanced nutrition and physical activity suggestions.">
+<meta name="theme-color" content="#087f5b">
+<title>AI Food & Activity Coach</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+:root{
+    --bg:#f3f7f4;
+    --surface:#ffffff;
+    --surface-2:#f0f8f4;
+    --text:#183027;
+    --muted:#5b6f66;
+    --brand:#087f5b;
+    --brand-strong:#056047;
+    --brand-soft:#e5f3ec;
+    --accent:#20c997;
+    --border:#e1eae5;
+    --warn-bg:#fff8db;
+    --warn:#e0a800;
+    --info-bg:#e7f5ff;
+    --info-border:#bfe0f7;
+    --shadow:0 8px 28px rgba(16,60,40,.08);
+    --shadow-hover:0 12px 32px rgba(16,60,40,.14);
+    --good:#2b8a3e;
+    --good-soft:#ebfbee;
+    --bad:#c92a2a;
+    --bad-soft:#fff5f5;
+    --c-nasi:#f08c00;
+    --c-makanan:#e8590c;
+    --c-minuman:#1c7ed6;
+    --c-buah:#2f9e44;
+    --c-snek:#ae3ec9;
+    --c-pencuci:#d6336c;
+}
+@media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+        --bg:#0e1814;
+        --surface:#15231d;
+        --surface-2:#1a2c25;
+        --text:#e4f1eb;
+        --muted:#98b0a5;
+        --brand:#2fbf8f;
+        --brand-strong:#5fd8ad;
+        --brand-soft:#1d3a2f;
+        --border:#27403a;
+        --warn-bg:#2b2612;
+        --info-bg:#132634;
+        --info-border:#24445a;
+        --shadow:0 8px 28px rgba(0,0,0,.35);
+        --shadow-hover:0 12px 32px rgba(0,0,0,.5);
+        --good:#69db7c;
+        --good-soft:#16301f;
+        --bad:#ff8787;
+        --bad-soft:#3a1c1c;
+    }
+}
+:root[data-theme="dark"]{
+    --bg:#0e1814;
+    --surface:#15231d;
+    --surface-2:#1a2c25;
+    --text:#e4f1eb;
+    --muted:#98b0a5;
+    --brand:#2fbf8f;
+    --brand-strong:#5fd8ad;
+    --brand-soft:#1d3a2f;
+    --border:#27403a;
+    --warn-bg:#2b2612;
+    --info-bg:#132634;
+    --info-border:#24445a;
+    --shadow:0 8px 28px rgba(0,0,0,.35);
+    --shadow-hover:0 12px 32px rgba(0,0,0,.5);
+    --good:#69db7c;
+    --good-soft:#16301f;
+    --bad:#ff8787;
+    --bad-soft:#3a1c1c;
+}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth}
+body{
+    margin:0;
+    font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+}
+button{font-family:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:8px}
+
+/* ---------- HEADER ---------- */
+header{
+    position:relative;
+    overflow:hidden;
+    background:linear-gradient(135deg,#065f46 0%,#087f5b 45%,#20c997 100%);
+    color:#fff;
+    padding:48px 16px 70px;
+    text-align:center;
+}
+header::before,header::after{
+    content:"";
+    position:absolute;
+    border-radius:50%;
+    background:rgba(255,255,255,.08);
+}
+header::before{width:340px;height:340px;top:-140px;right:-80px}
+header::after{width:220px;height:220px;bottom:-110px;left:-60px}
+.theme-toggle{
+    position:absolute;top:14px;right:14px;z-index:2;
+    background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);
+    color:#fff;width:40px;height:40px;border-radius:12px;cursor:pointer;font-size:18px;
+}
+.theme-toggle:hover{background:rgba(255,255,255,.28)}
+header h1{
+    position:relative;
+    margin:0 0 10px;
+    font-size:clamp(28px,5.5vw,46px);
+    font-weight:800;
+    letter-spacing:-.02em;
+}
+header p{
+    position:relative;
+    margin:0 auto;
+    max-width:620px;
+    font-size:clamp(15px,2.4vw,17px);
+    opacity:.95;
+}
+.hero-steps{
+    position:relative;
+    display:flex;justify-content:center;flex-wrap:wrap;gap:8px;
+    margin-top:22px;
+}
+.hero-steps span{
+    background:rgba(255,255,255,.16);
+    border:1px solid rgba(255,255,255,.28);
+    padding:7px 13px;border-radius:999px;font-size:13px;font-weight:600;
+}
+
+.container{
+    width:min(1150px,calc(100% - 32px));
+    margin:-40px auto 50px;
+    position:relative;
+}
+
+.card{
+    background:var(--surface);
+    padding:clamp(18px,3vw,28px);
+    border-radius:22px;
+    margin-bottom:22px;
+    box-shadow:var(--shadow);
+    border:1px solid var(--border);
+}
+.card h2{margin:0 0 6px;font-size:clamp(20px,3vw,24px);letter-spacing:-.01em}
+.card > p.lead{margin:0 0 4px;color:var(--muted)}
+
+.notice{
+    display:flex;gap:12px;align-items:flex-start;
+    background:var(--warn-bg);
+    border-left:6px solid var(--warn);
+    padding:15px 16px;
+    border-radius:14px;
+    margin-bottom:22px;
+    box-shadow:var(--shadow);
+}
+.notice .ico{font-size:22px;line-height:1}
+
+/* ---------- SEARCH & CATEGORY ---------- */
+.search-wrap{position:relative;margin:16px 0 14px}
+.search-box{
+    width:100%;
+    padding:14px 44px 14px 16px;
+    border:2px solid var(--border);
+    background:var(--surface-2);
+    color:var(--text);
+    border-radius:14px;
+    font-size:16px;
+    font-family:inherit;
+    outline:none;
+    transition:border-color .2s, background .2s;
+}
+.search-box:focus{border-color:var(--brand);background:var(--surface)}
+.search-clear{
+    position:absolute;right:8px;top:50%;transform:translateY(-50%);
+    border:0;background:transparent;cursor:pointer;font-size:18px;color:var(--muted);
+    width:32px;height:32px;border-radius:8px;display:none;
+}
+.search-clear.show{display:block}
+
+.categories{
+    display:flex;gap:8px;
+    overflow-x:auto;
+    padding-bottom:6px;
+    margin-bottom:16px;
+    scrollbar-width:thin;
+}
+.category{
+    flex:0 0 auto;
+    padding:9px 14px;
+    border:1px solid var(--border);
+    border-radius:999px;
+    background:var(--surface);
+    cursor:pointer;
+    font-weight:700;
+    font-size:14px;
+    transition:.2s;
+    display:flex;align-items:center;gap:6px;
+}
+.category:hover{border-color:var(--brand)}
+.category.active{background:var(--brand);border-color:var(--brand);color:#fff}
+.category .badge{
+    background:var(--accent);color:#063b2b;
+    border-radius:999px;font-size:11px;padding:1px 7px;min-width:20px;text-align:center;
+}
+.category.active .badge{background:#fff;color:var(--brand-strong)}
+
+/* ---------- FOOD GRID ---------- */
+.food-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
+    gap:12px;
+}
+.food{
+    border:2px solid var(--border);
+    background:var(--surface);
+    border-radius:18px;
+    padding:14px 10px 12px;
+    transition:transform .18s, border-color .18s, box-shadow .18s, background .18s;
+    position:relative;
+    min-height:168px;
+    display:flex;flex-direction:column;align-items:center;justify-content:space-between;
+    text-align:center;
+}
+.food:hover{transform:translateY(-3px);box-shadow:var(--shadow-hover)}
+.food[hidden]{display:none}
+.food.selected{border-color:var(--brand);background:var(--brand-soft)}
+.food .tick{
+    position:absolute;top:8px;right:8px;
+    background:var(--brand);color:#fff;border-radius:999px;
+    font-size:11px;font-weight:800;padding:2px 7px;
+    transform:scale(0);transition:transform .2s;
+}
+.food.selected .tick{transform:scale(1)}
+.food .tag{
+    position:absolute;top:8px;left:8px;font-size:12px;
+}
+.emoji{display:block;font-size:38px;line-height:1.1;margin-bottom:6px}
+.food-name{font-weight:700;font-size:14px;line-height:1.3}
+.food-cal{font-size:12.5px;color:var(--brand);margin:5px 0 2px;font-weight:700}
+
+.qty-control{display:flex;align-items:center;gap:10px;margin-top:8px}
+.qty-btn{
+    background:var(--brand);color:#fff;border:none;
+    width:32px;height:32px;border-radius:50%;
+    font-weight:800;font-size:18px;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;line-height:1;
+    transition:background .15s, transform .1s;
+}
+.qty-btn:hover{background:var(--brand-strong)}
+.qty-btn:active{transform:scale(.9)}
+.qty-btn:disabled{opacity:.4;cursor:not-allowed}
+.qty-val{font-weight:800;font-size:16px;min-width:20px;text-align:center}
+.select-btn{
+    background:var(--brand-soft);color:var(--brand);
+    border:none;padding:8px 14px;border-radius:12px;
+    font-weight:700;cursor:pointer;font-size:13px;margin-top:8px;
+    transition:.15s;
+}
+.select-btn:hover{background:var(--brand);color:#fff}
+
+.empty-state{
+    display:none;text-align:center;padding:30px 10px;color:var(--muted);
+}
+.empty-state.show{display:block}
+.empty-state .big{font-size:40px}
+
+/* ---------- STICKY SUMMARY BAR ---------- */
+.summary-bar{
+    position:sticky;
+    bottom:12px;
+    z-index:5;
+    display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;
+    background:var(--surface);
+    border:2px solid var(--brand);
+    padding:12px 14px;
+    border-radius:18px;
+    margin-top:20px;
+    box-shadow:0 10px 30px rgba(8,127,91,.22);
+}
+.summary-bar.idle{position:static;box-shadow:none;border-color:var(--border)}
+.summary-stats{display:flex;flex-direction:column;gap:2px}
+.summary-stats .big{font-size:22px;font-weight:800;color:var(--brand)}
+.summary-stats .small{font-size:13px;color:var(--muted)}
+.summary-actions{display:flex;gap:8px;flex-wrap:wrap}
+
+.main-btn,.reset-btn,.ghost-btn{
+    padding:12px 18px;border-radius:14px;border:0;cursor:pointer;
+    font-weight:700;font-size:15px;transition:.15s;
+}
+.main-btn{background:var(--brand);color:#fff}
+.main-btn:hover{background:var(--brand-strong)}
+.main-btn:disabled{opacity:.5;cursor:not-allowed}
+.reset-btn{background:var(--surface-2);border:1px solid var(--border)}
+.reset-btn:hover{border-color:var(--brand)}
+.ghost-btn{background:transparent;border:1px solid var(--border);font-size:14px;padding:10px 14px}
+.ghost-btn:hover{border-color:var(--brand);color:var(--brand)}
+
+.bump{animation:bump .35s ease}
+@keyframes bump{0%{transform:scale(1)}40%{transform:scale(1.15)}100%{transform:scale(1)}}
+
+/* ---------- RESULT ---------- */
+.result{display:none}
+.result.show{display:block;animation:fadeUp .45s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+
+.result-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+.result-head h2{color:var(--brand-strong)}
+
+.overview{
+    display:grid;
+    grid-template-columns:minmax(200px,260px) 1fr;
+    gap:18px;
+    margin:18px 0;
+}
+@media (max-width:640px){.overview{grid-template-columns:1fr}}
+
+.ring-card,.panel{
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    border-radius:18px;
+    padding:18px;
+}
+.ring-card{display:flex;flex-direction:column;align-items:center;text-align:center}
+.ring{position:relative;width:170px;height:170px}
+.ring svg{transform:rotate(-90deg)}
+.ring .track{stroke:var(--border)}
+.ring .bar{stroke:var(--brand);transition:stroke-dashoffset 1s ease}
+.ring-label{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ring-label .val{font-size:30px;font-weight:800;color:var(--brand)}
+.ring-label .unit{font-size:13px;color:var(--muted)}
+.ring-caption{font-size:13px;color:var(--muted);margin-top:10px}
+
+.level-pill{
+    display:inline-block;padding:5px 12px;border-radius:999px;font-weight:700;font-size:13px;margin-bottom:8px;
+}
+.level-low{background:#e7f5ff;color:#1864ab}
+.level-mid{background:#e6fcf5;color:#087f5b}
+.level-high{background:#fff4e6;color:#d9480f}
+
+.panel h3{margin:0 0 8px;font-size:17px}
+.stack{
+    display:flex;height:16px;border-radius:999px;overflow:hidden;background:var(--border);margin:10px 0 12px;
+}
+.stack span{height:100%;transition:width .8s ease}
+.legend{display:flex;flex-wrap:wrap;gap:10px 16px;font-size:13px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:middle}
+
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.chip{
+    display:inline-flex;align-items:center;gap:6px;
+    background:var(--surface);border:1px solid var(--border);
+    padding:6px 6px 6px 12px;border-radius:999px;font-size:13px;
+}
+.chip button{
+    border:0;background:var(--surface-2);cursor:pointer;width:22px;height:22px;border-radius:50%;
+    font-size:12px;color:var(--muted);
+}
+.chip button:hover{background:#ffe3e3;color:#c92a2a}
+
+.section-title{margin:26px 0 10px;font-size:19px}
+
+.tips{display:grid;gap:10px}
+.tip{
+    display:flex;gap:12px;align-items:flex-start;
+    background:var(--surface);border:1px solid var(--border);
+    border-left:5px solid var(--brand);
+    padding:13px 15px;border-radius:14px;
+}
+.tip .ico{font-size:22px;line-height:1.1}
+.tip strong{display:block;margin-bottom:2px}
+.tip.good{border-left-color:#2f9e44}
+.tip.warn{border-left-color:#f08c00}
+
+.swap-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px}
+.swap{
+    display:flex;align-items:center;gap:10px;justify-content:space-between;
+    background:var(--surface);border:1px dashed var(--brand);border-radius:14px;padding:12px 14px;font-size:14px;
+}
+.swap .arrow{color:var(--brand);font-weight:800}
+.swap .save{
+    background:var(--brand-soft);color:var(--brand);font-weight:800;border-radius:999px;padding:3px 9px;font-size:12px;white-space:nowrap;
+}
+.swap button{
+    border:0;background:var(--brand);color:#fff;border-radius:10px;padding:6px 10px;font-weight:700;cursor:pointer;font-size:12px;white-space:nowrap;
+}
+
+.situation-grid{
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;
+}
+.situation-card{
+    background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:15px;
+}
+.situation-card h4{margin:0 0 8px;color:var(--brand)}
+.situation-card ul{margin:0;padding-left:18px;font-size:13.5px}
+.situation-card li{margin-bottom:5px}
+
+.intensity-filter{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.activity-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}
+.activity{
+    background:var(--surface);padding:16px;border-radius:16px;border:1px solid var(--border);
+    display:flex;flex-direction:column;gap:4px;transition:.18s;
+}
+.activity:hover{transform:translateY(-2px);box-shadow:var(--shadow-hover)}
+.activity-top{display:flex;justify-content:space-between;align-items:center}
+.activity-icon{font-size:30px}
+.intensity{font-size:11px;font-weight:800;padding:3px 8px;border-radius:999px;text-transform:uppercase;letter-spacing:.03em}
+.int-ringan{background:#e6fcf5;color:#087f5b}
+.int-sederhana{background:#fff9db;color:#e67700}
+.int-tinggi{background:#fff0f6;color:#c2255c}
+.activity strong{font-size:15px}
+.activity .time{font-size:22px;font-weight:800;color:var(--brand)}
+.activity .sessions{font-size:12px;color:var(--muted)}
+.activity .desc{font-size:13px;color:var(--muted)}
+
+.source-tag{
+    font-size:13px;background:var(--info-bg);border:1px solid var(--info-border);
+    padding:12px 14px;border-radius:12px;margin-top:24px;line-height:1.6;
+}
+
+/* ---------- QUIZ ---------- */
+.quiz-top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin:14px 0 10px}
+.quiz-meta{font-size:13px;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums}
+.quiz-best{font-size:13px;color:var(--muted)}
+.quiz-progress{height:8px;border-radius:999px;background:var(--border);overflow:hidden;margin-bottom:16px}
+.quiz-progress span{display:block;height:100%;width:0;background:var(--brand);transition:width .35s ease}
+.quiz-q{margin:0 0 14px;font-size:clamp(17px,2.6vw,20px);line-height:1.4;text-wrap:balance}
+.quiz-options{display:grid;gap:10px}
+.quiz-opt{
+    display:flex;align-items:center;gap:12px;width:100%;text-align:left;
+    padding:13px 14px;border:2px solid var(--border);border-radius:14px;
+    background:var(--surface);font-size:15px;font-weight:600;cursor:pointer;transition:.15s;
+}
+.quiz-opt:hover:not(:disabled){border-color:var(--brand);background:var(--brand-soft)}
+.quiz-opt:disabled{cursor:default}
+.quiz-opt .key{
+    flex:0 0 30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    background:var(--surface-2);border:1px solid var(--border);font-weight:800;font-size:13px;
+}
+.quiz-opt.correct{border-color:var(--good);background:var(--good-soft)}
+.quiz-opt.correct .key{background:var(--good);border-color:var(--good);color:var(--surface)}
+.quiz-opt.wrong{border-color:var(--bad);background:var(--bad-soft)}
+.quiz-opt.wrong .key{background:var(--bad);border-color:var(--bad);color:var(--surface)}
+.quiz-opt.dim{opacity:.55}
+.quiz-feedback{
+    margin-top:14px;padding:13px 15px;border-radius:14px;background:var(--surface-2);
+    border:1px solid var(--border);font-size:14.5px;line-height:1.55;
+}
+.quiz-feedback strong{display:block;margin-bottom:3px}
+.quiz-feedback.good strong{color:var(--good)}
+.quiz-feedback.bad strong{color:var(--bad)}
+.quiz-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:14px;flex-wrap:wrap}
+.quiz-result{text-align:center;padding:10px 0 4px}
+.quiz-result .score{font-size:clamp(40px,8vw,56px);font-weight:800;color:var(--brand);line-height:1;font-variant-numeric:tabular-nums}
+.quiz-result .score small{font-size:.45em;color:var(--muted)}
+.quiz-result p{margin:10px auto 0;max-width:520px;color:var(--muted)}
+.quiz-review{display:grid;gap:8px;margin:18px 0 0;padding:0;list-style:none;text-align:left}
+.quiz-review li{
+    display:flex;gap:10px;align-items:flex-start;padding:11px 13px;border-radius:12px;
+    background:var(--surface-2);border:1px solid var(--border);font-size:14px;
+}
+.quiz-review .mark{font-weight:800;flex:0 0 auto}
+.quiz-review .mark.ok{color:var(--good)}
+.quiz-review .mark.no{color:var(--bad)}
+.quiz-review small{display:block;color:var(--muted);margin-top:2px}
+
+.quiz-tag{
+    display:inline-block;font-size:12px;font-weight:800;color:var(--brand);background:var(--brand-soft);
+    padding:3px 10px;border-radius:999px;margin-bottom:8px;
+}
+.quiz-history{margin-top:24px;padding-top:18px;border-top:1px solid var(--border)}
+.qh-head{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.qh-head h3{margin:0;font-size:17px}
+.qh-head .del-btn{margin:0}
+.qh-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin:12px 0 14px}
+.qh-stats div{background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:2px}
+.qh-stats strong{font-size:20px;color:var(--brand);font-variant-numeric:tabular-nums}
+.qh-stats span{font-size:12px;color:var(--muted)}
+.qh-list{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:auto minmax(60px,1fr) auto;column-gap:12px;row-gap:9px;align-items:center;font-size:13.5px;font-variant-numeric:tabular-nums}
+.qh-list li{display:contents}
+.qh-list .when{color:var(--muted);white-space:nowrap}
+.qh-bar{height:10px;border-radius:999px;background:var(--border);overflow:hidden}
+.qh-bar span{display:block;height:100%;background:var(--brand);border-radius:999px}
+.qh-note{font-size:12.5px;color:var(--muted);margin:10px 0 0}
+@media (max-width:480px){.qh-list .when{white-space:normal;font-size:12.5px}}
+
+/* ---------- NOTES ---------- */
+.note-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:14px}
+.note{background:var(--surface-2);border:1px solid var(--border);border-radius:16px;padding:16px;font-size:14px}
+.note h3{margin:0 0 6px;font-size:16px}
+
+/* ---------- SOURCE NOTE ---------- */
+.source-note{
+    margin-top:16px;font-size:13px;color:var(--muted);
+    background:var(--info-bg);border:1px solid var(--info-border);border-radius:12px;padding:10px 14px;
+}
+.source-note summary{cursor:pointer;font-weight:700;color:var(--text);list-style-position:inside}
+.source-note ul{margin:8px 0 2px;padding-left:18px;display:grid;gap:5px;line-height:1.5}
+.source-note a,.source-tag a{color:var(--brand);font-weight:700}
+.food-src{font-size:11px;color:var(--muted);margin-top:-2px}
+
+/* ---------- CUSTOM FOOD ---------- */
+.add-hint{margin:-4px 0 14px;font-size:14px;color:var(--muted)}
+.link-btn{
+    background:none;border:0;padding:0;cursor:pointer;font:inherit;font-weight:700;
+    color:var(--brand);text-decoration:underline;text-underline-offset:3px;
+}
+.custom-panel{
+    background:var(--surface-2);
+    border:2px dashed var(--brand);
+    border-radius:20px;
+    padding:18px;
+    margin-bottom:18px;
+    display:grid;gap:14px;
+    animation:fadeUp .3s ease;
+}
+.panel-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.panel-head h3{margin:0;font-size:18px}
+.panel-head p{margin:4px 0 0;font-size:13.5px;color:var(--muted)}
+.icon-btn{
+    border:1px solid var(--border);background:var(--surface);cursor:pointer;
+    width:36px;height:36px;border-radius:10px;font-size:15px;flex:0 0 auto;
+}
+.icon-btn:hover{border-color:var(--brand)}
+.field{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:700}
+.field input,.field select{
+    width:100%;padding:11px 12px;border:2px solid var(--border);border-radius:12px;
+    background:var(--surface);color:var(--text);font:inherit;font-size:15px;font-weight:500;outline:none;
+}
+.field input:focus,.field select:focus{border-color:var(--brand)}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap}
+.checks{display:flex;gap:16px;flex-wrap:wrap;font-size:14px}
+.checks label{display:flex;align-items:center;gap:6px;cursor:pointer}
+.checks input{width:18px;height:18px;accent-color:var(--brand)}
+.ai-row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+.ai-row .field{flex:1 1 170px}
+.ai-status{font-size:13.5px;color:var(--muted);margin:0;min-height:1.2em}
+.ai-status.err{color:#c92a2a}
+.dots::after{content:"";animation:dots 1.2s steps(4) infinite}
+@keyframes dots{0%{content:""}25%{content:"."}50%{content:".."}75%{content:"..."}}
+.preview{
+    display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+    background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:12px 14px;
+}
+.preview .emoji{font-size:36px;margin:0}
+.preview .pv-body{flex:1 1 180px;display:flex;flex-direction:column;gap:2px}
+.preview .pv-name{font-weight:800}
+.preview .pv-meta{font-size:13px;color:var(--brand);font-weight:700}
+.preview .pv-note{font-size:12.5px;color:var(--muted)}
+.food .custom-badge{
+    position:absolute;top:8px;left:8px;background:var(--accent);color:#063b2b;
+    font-size:10.5px;font-weight:800;padding:2px 7px;border-radius:999px;
+}
+.del-btn{
+    display:block;margin:6px auto 0;background:none;border:0;cursor:pointer;
+    font-size:12px;color:var(--muted);text-decoration:underline;
+}
+.del-btn:hover,.del-btn.confirm{color:#c92a2a}
+
+footer{text-align:center;color:var(--muted);padding:10px 16px 30px;font-size:13px}
+
+/* ---------- TOAST ---------- */
+.toast{
+    position:fixed;left:50%;bottom:24px;transform:translate(-50%,120px);
+    background:#183027;color:#fff;padding:12px 18px;border-radius:14px;
+    font-weight:600;font-size:14px;z-index:50;box-shadow:0 10px 30px rgba(0,0,0,.25);
+    transition:transform .3s ease;max-width:calc(100% - 32px);text-align:center;
+}
+.toast.show{transform:translate(-50%,0)}
+
+@media (max-width:480px){
+    .food-grid{grid-template-columns:repeat(2,1fr);gap:10px}
+    .food{min-height:160px;padding:12px 6px}
+    .summary-bar{bottom:8px;padding:10px 12px;gap:8px}
+    .summary-stats .big{font-size:19px}
+    .summary-actions{width:100%;flex-wrap:nowrap}
+    .summary-actions button{padding:10px 12px;font-size:14px;white-space:nowrap}
+    .summary-actions .main-btn{flex:1}
+    .hide-sm{display:none}
+}
+@media (prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <button class="theme-toggle" id="themeToggle" aria-label="Switch dark/light mode" title="Switch theme">🌙</button>
+    <h1>🥗 AI Food & Activity Coach</h1>
+    <p>Pick your foods, adjust the servings, and get balanced nutrition and activity suggestions.</p>
+    <div class="hero-steps" aria-hidden="true">
+        <span>1 · Pick foods</span>
+        <span>2 · Adjust servings</span>
+        <span>3 · Get your analysis</span>
+        <span>4 · Test yourself with a quiz</span>
+    </div>
+</header>
+
+<main class="container">
+
+    <div class="notice" role="note">
+        <span class="ico">💡</span>
+        <div>
+            <strong>Important note:</strong>
+            Calories here are average estimates for a typical serving. Food doesn't need to be "paid back" with extreme exercise. Your body already burns about 60–70% of its daily energy naturally (BMR), even at rest.
+        </div>
+    </div>
+
+    <!-- FOOD SELECTOR -->
+    <section class="card" aria-labelledby="pickTitle">
+        <h2 id="pickTitle">🍴 1. Pick foods & adjust servings</h2>
+        <p class="lead">Tap <strong>+ Add</strong>, then use the <strong>+</strong> / <strong>−</strong> buttons to change the number of servings.</p>
+
+        <div class="search-wrap">
+            <input id="search" class="search-box" type="search" placeholder="🔎 Search foods… (e.g. rice, tea, kuih)" aria-label="Search foods" autocomplete="off">
+            <button class="search-clear" id="searchClear" aria-label="Clear search">✕</button>
+        </div>
+
+        <p class="add-hint">Can't find your food? <button class="link-btn" id="openPanelBtn">➕ Add another food</button></p>
+
+        <div class="custom-panel" id="customPanel" hidden>
+            <div class="panel-head">
+                <div>
+                    <h3>➕ Add a food that isn't on the list</h3>
+                    <p>Type the food's name, then choose how to estimate its calories.</p>
+                </div>
+                <button class="icon-btn" id="closePanelBtn" aria-label="Close the add food panel">✕</button>
+            </div>
+
+            <label class="field">Food / drink name
+                <input id="cfName" maxlength="40" autocomplete="off" placeholder="e.g. Tomato Rice, Lemang, Kuih Lapis, Sugarcane Juice">
+            </label>
+
+            <div class="tabs" id="cfTabs" role="tablist" aria-label="Estimation method">
+                <button class="category" data-tab="ai" id="tabAi" hidden>🤖 Ask AI</button>
+                <button class="category active" data-tab="est">🧮 Estimate by type</button>
+                <button class="category" data-tab="manual">✍️ I know the calories</button>
+            </div>
+
+            <div data-pane="ai" hidden>
+                <div class="ai-row">
+                    <label class="field">Serving size
+                        <select id="cfAiSize"></select>
+                    </label>
+                    <button class="main-btn" id="cfAiBtn">🤖 Estimate calories</button>
+                    <button class="reset-btn" id="cfAiStop" hidden>Stop</button>
+                </div>
+                <p class="ai-status" id="cfAiStatus" aria-live="polite">The AI will estimate the calories, category and food type based on a typical serving in Malaysia.</p>
+            </div>
+
+            <div data-pane="est">
+                <div class="form-grid">
+                    <label class="field">Closest food type
+                        <select id="cfType"></select>
+                    </label>
+                    <label class="field">Serving size
+                        <select id="cfSize"></select>
+                    </label>
+                    <label class="field">Cooking method
+                        <select id="cfCook"></select>
+                    </label>
+                </div>
+            </div>
+
+            <div data-pane="manual" hidden>
+                <div class="form-grid">
+                    <label class="field">Calories (kcal) per serving
+                        <input id="cfCal" type="number" min="0" max="3000" step="5" inputmode="numeric" placeholder="e.g. 350">
+                    </label>
+                    <label class="field">Category
+                        <select id="cfCat"></select>
+                    </label>
+                </div>
+                <div class="checks" style="margin-top:12px">
+                    <label><input type="checkbox" id="cfFried"> Fried / oily</label>
+                    <label><input type="checkbox" id="cfSweet"> High in sugar</label>
+                </div>
+                <p class="ai-status" style="margin-top:10px">Tip: calories are usually printed on the packaging label (“Energy … kcal”).</p>
+            </div>
+
+            <div class="preview" id="cfPreview">
+                <span class="emoji" id="pvEmoji" aria-hidden="true">🍽️</span>
+                <div class="pv-body">
+                    <span class="pv-name" id="pvName">Food name</span>
+                    <span class="pv-meta" id="pvMeta">—</span>
+                    <span class="pv-note" id="pvNote"></span>
+                </div>
+                <button class="main-btn" id="cfAdd" disabled>➕ Add & select</button>
+            </div>
+        </div>
+
+        <div class="categories" id="categories" role="tablist" aria-label="Food categories"></div>
+
+        <div class="food-grid" id="foodGrid"></div>
+
+        <div class="empty-state" id="emptyState">
+            <div class="big">🍽️</div>
+            <p>No foods match this search.</p>
+            <button class="main-btn" id="emptyAddBtn">➕ Add this food</button>
+        </div>
+
+        <details class="source-note">
+            <summary>ℹ️ Where the calorie figures come from, and how accurate they are</summary>
+            <ul>
+                <li><strong>Foods on the list:</strong> average estimates for one typical serving, based on the <a href="https://myfcd.moh.gov.my" target="_blank" rel="noopener">Malaysian Food Composition Database (MyFCD)</a>, Ministry of Health Malaysia (KKM) calorie guides and <a href="https://fdc.nal.usda.gov" target="_blank" rel="noopener">USDA FoodData Central</a>.</li>
+                <li><strong>Actual calories can differ</strong> by about 20–30% depending on the shop, recipe, serving size, and the oil and sugar used.</li>
+                <li><strong>⭐ My foods:</strong> values come from an AI estimate, an estimate by food type, or a number you entered. They are not official data. For packaged foods, the nutrition label (“Energy”) is the most accurate source.</li>
+                <li><strong>Activity times:</strong> calculated from the <a href="https://pacompendium.com" target="_blank" rel="noopener">Compendium of Physical Activities</a> for an adult of about 60 kg. Lighter or heavier people burn energy at different rates.</li>
+                <li><strong>The 2,000 kcal daily reference</strong> is a general value used on nutrition labels. Real needs depend on age, sex, body size and activity level.</li>
+            </ul>
+        </details>
+
+        <div class="summary-bar" aria-live="polite">
+            <div class="summary-stats">
+                <span class="big"><span id="totalCal">0</span> kcal</span>
+                <span class="small"><span id="count">0</span> foods · <span id="itemCount">0</span> servings</span>
+            </div>
+            <div class="summary-actions">
+                <button class="reset-btn" id="clearBtn" aria-label="Remove all selections">✕<span class="hide-sm"> Clear all</span></button>
+                <button class="main-btn" id="analyseBtn">🤖 Analyse<span class="hide-sm"> my choices</span></button>
+            </div>
+        </div>
+    </section>
+
+    <!-- RESULT -->
+    <section class="card result" id="result" aria-labelledby="resultTitle" tabindex="-1">
+        <div class="result-head">
+            <div>
+                <h2 id="resultTitle">🤖 2. Your AI Coach analysis</h2>
+                <p class="lead" id="advice" style="margin:0;color:var(--muted)"></p>
+            </div>
+            <button class="ghost-btn" id="copyBtn">📋 Copy summary</button>
+        </div>
+
+        <div class="overview">
+            <div class="ring-card">
+                <span class="level-pill" id="levelPill">—</span>
+                <div class="ring" role="img" id="ringWrap">
+                    <svg width="170" height="170" viewBox="0 0 170 170">
+                        <circle class="track" cx="85" cy="85" r="72" fill="none" stroke-width="14"/>
+                        <circle class="bar" id="ringBar" cx="85" cy="85" r="72" fill="none" stroke-width="14" stroke-linecap="round"/>
+                    </svg>
+                    <div class="ring-label">
+                        <span class="val" id="resTotalCal">0</span>
+                        <span class="unit">kcal</span>
+                    </div>
+                </div>
+                <div class="ring-caption">≈ <strong id="dailyPct">0%</strong> of the average daily reference (2,000 kcal)</div>
+            </div>
+
+            <div class="panel">
+                <h3>📊 Where do the calories come from?</h3>
+                <div class="stack" id="stackBar"></div>
+                <div class="legend" id="legend"></div>
+                <h3 style="margin-top:16px">🍽️ Selected foods</h3>
+                <div class="chips" id="selectedFoods"></div>
+            </div>
+        </div>
+
+        <h3 class="section-title">💡 Smart tips for your choices</h3>
+        <div class="tips" id="tips"></div>
+
+        <div id="swapSection">
+            <h3 class="section-title">🔄 Lighter swaps (optional)</h3>
+            <div class="swap-grid" id="swaps"></div>
+        </div>
+
+        <h3 class="section-title">🏃 Activity ideas: how long to use the same energy?</h3>
+        <p style="margin:0 0 10px;color:var(--muted);font-size:14px">
+            This is only a comparison to help you understand food energy, <strong>not</strong> a required target. A practical session is 30–45 minutes, and longer times can be spread over several days.
+        </p>
+        <div class="intensity-filter" id="intensityFilter"></div>
+        <div class="activity-grid" id="activities"></div>
+
+        <h3 class="section-title">🧭 Eating tips for different situations</h3>
+        <div class="situation-grid">
+            <div class="situation-card">
+                <h4>🏃 Before / After Exercise</h4>
+                <ul>
+                    <li><strong>Before:</strong> Simple carbohydrates (banana/toast) 30–60 minutes ahead for quick energy.</li>
+                    <li><strong>After:</strong> A mix of protein & carbohydrates (chicken/egg + rice) for muscle recovery.</li>
+                </ul>
+            </div>
+            <div class="situation-card">
+                <h4>📚 Exam / Study Time</h4>
+                <ul>
+                    <li><strong>Brain focus:</strong> Omega-3-rich foods (fish, nuts) and fresh fruit.</li>
+                    <li><strong>Avoid drowsiness:</strong> Go easy on very heavy meals & high-sugar drinks while studying.</li>
+                </ul>
+            </div>
+            <div class="situation-card">
+                <h4>🤒 Unwell / Sensitive Stomach</h4>
+                <ul>
+                    <li><strong>Easy to digest:</strong> Chicken porridge, egg soup, or plain toast without butter.</li>
+                    <li><strong>Hydration:</strong> Warm water, coconut water, or soup to prevent dehydration.</li>
+                </ul>
+            </div>
+            <div class="situation-card">
+                <h4>⏱️ Busy Day / Short on Time</h4>
+                <ul>
+                    <li><strong>Quick healthy snacks:</strong> Egg/tuna sandwich, a banana, or nuts.</li>
+                    <li><strong>Fast choices:</strong> Pick steamed, boiled or soup versions over fried ones.</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="source-tag">
+            🔍 <strong>References for calorie & activity estimates:</strong><br>
+            1. 🇲🇾 <a href="https://myfcd.moh.gov.my" target="_blank" rel="noopener">Malaysian Food Composition Database (MyFCD)</a> & the Malaysian Healthy Plate “Quarter-Quarter-Half” guide (KKM)<br>
+            2. 🌐 <a href="https://fdc.nal.usda.gov" target="_blank" rel="noopener">USDA FoodData Central</a> (general food nutrition profiles)<br>
+            3. 🏃 <a href="https://pacompendium.com" target="_blank" rel="noopener">Compendium of Physical Activities</a> (energy burn estimates for an adult of ~60 kg)<br>
+            <span style="color:var(--muted)">All values are estimates for education. ⭐ My foods use an AI estimate, an estimate by type, or a value entered by the user.</span>
+        </div>
+    </section>
+
+    <!-- QUIZ -->
+    <section class="card" id="quiz" aria-labelledby="quizTitle">
+        <h2 id="quizTitle">🧠 Nutrition Quiz</h2>
+        <p class="lead">Test what you know about balanced eating, drinks and activity. Each round has 5 new questions: 3 knowledge questions you haven't seen yet and 2 randomly generated calorie challenges.</p>
+        <div id="quizBody"></div>
+        <div id="quizHistory"></div>
+    </section>
+
+    <section class="card" aria-labelledby="notesTitle">
+        <h2 id="notesTitle">📚 Quick notes for students</h2>
+        <div class="note-grid">
+            <div class="note"><h3>🥦 Variety</h3>Eat a variety of foods so your body gets a range of nutrients.</div>
+            <div class="note"><h3>💧 Water</h3>Plain water is the easiest way to meet your body's fluid needs.</div>
+            <div class="note"><h3>🏃 Move</h3>Walking, sports, cycling and dancing all count as physical activity.</div>
+            <div class="note"><h3>😴 Sleep</h3>Enough sleep matters for learning, energy and recovery.</div>
+            <div class="note"><h3>🍰 Favourite Foods</h3>Cake, chocolate and other favourites can be enjoyed in moderation, without guilt.</div>
+            <div class="note"><h3>🧠 Mindful Eating</h3>Eat slowly and pay attention to how hungry and full you feel.</div>
+        </div>
+    </section>
+
+</main>
+
+<footer>
+    AI Food & Activity Coach · Estimates based on MyFCD, KKM, USDA & the Compendium of Physical Activities · Not a substitute for professional health advice
+</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* =========================================================
+   FOOD DATA
+   t = tag: g = digoreng, m = tinggi gula, s = pilihan segar/ringan, p = sumber protein
+========================================================= */
+let foods = [
+/* RICE */
+{name:"White Rice (1 bowl)",emoji:"🍚",cat:"Nasi",cal:200,t:""},
+{name:"Nasi Lemak (Plain)",emoji:"🍛",cat:"Nasi",cal:400,t:""},
+{name:"Nasi Lemak with Fried Chicken",emoji:"🍗",cat:"Nasi",cal:650,t:"gp"},
+{name:"Fried Rice (Plain)",emoji:"🍳",cat:"Nasi",cal:350,t:"g"},
+{name:"Nasi Goreng Kampung",emoji:"🍳",cat:"Nasi",cal:420,t:"g"},
+{name:"Chinese Fried Rice",emoji:"🍳",cat:"Nasi",cal:340,t:"g"},
+{name:"Chicken Rice",emoji:"🍗",cat:"Nasi",cal:380,t:"p"},
+{name:"Nasi Kerabu",emoji:"🍚",cat:"Nasi",cal:310,t:"s"},
+{name:"Nasi Dagang",emoji:"🍛",cat:"Nasi",cal:520,t:"p"},
+{name:"Nasi Kandar (Chicken + Okra)",emoji:"🍛",cat:"Nasi",cal:680,t:"gp"},
+{name:"Chicken Biryani",emoji:"🍛",cat:"Nasi",cal:600,t:"p"},
+{name:"Chicken Porridge",emoji:"🥣",cat:"Nasi",cal:180,t:"p"},
+
+/* MEALS */
+{name:"Beef Burger",emoji:"🍔",cat:"Makanan",cal:450,t:"p"},
+{name:"Chicken Burger",emoji:"🍔",cat:"Makanan",cal:420,t:"p"},
+{name:"Pizza (1 slice)",emoji:"🍕",cat:"Makanan",cal:280,t:""},
+{name:"Fried Chicken (1 piece)",emoji:"🍗",cat:"Makanan",cal:240,t:"gp"},
+{name:"Grilled Chicken (1 piece)",emoji:"🍗",cat:"Makanan",cal:180,t:"p"},
+{name:"Hot Dog",emoji:"🌭",cat:"Makanan",cal:290,t:""},
+{name:"Egg / Mayo Sandwich",emoji:"🥪",cat:"Makanan",cal:220,t:"p"},
+{name:"Roti Canai (1 piece)",emoji:"🫓",cat:"Makanan",cal:300,t:"g"},
+{name:"Roti Telur (Egg)",emoji:"🍳",cat:"Makanan",cal:350,t:"gp"},
+{name:"Plain Naan",emoji:"🫓",cat:"Makanan",cal:280,t:""},
+{name:"Mee Goreng Mamak",emoji:"🍜",cat:"Makanan",cal:480,t:"g"},
+{name:"Noodle Soup / Bakso",emoji:"🍜",cat:"Makanan",cal:280,t:"p"},
+{name:"Curry Mee",emoji:"🍜",cat:"Makanan",cal:450,t:""},
+{name:"Fried Kuey Teow",emoji:"🍜",cat:"Makanan",cal:400,t:"g"},
+{name:"Kuey Teow Soup",emoji:"🍜",cat:"Makanan",cal:270,t:""},
+{name:"Laksa (Penang / Johor)",emoji:"🍜",cat:"Makanan",cal:350,t:""},
+{name:"Fried Bihun (Rice Vermicelli)",emoji:"🍜",cat:"Makanan",cal:300,t:"g"},
+{name:"Bihun Soup",emoji:"🍜",cat:"Makanan",cal:250,t:""},
+{name:"Spaghetti Bolognese",emoji:"🍝",cat:"Makanan",cal:380,t:"p"},
+{name:"Mac & Cheese",emoji:"🧀",cat:"Makanan",cal:400,t:""},
+{name:"Sushi (2 pcs)",emoji:"🍣",cat:"Makanan",cal:140,t:"p"},
+{name:"Chicken Satay (5 sticks)",emoji:"🍢",cat:"Makanan",cal:200,t:"p"},
+{name:"Steamed Dumplings (3 pcs)",emoji:"🥟",cat:"Makanan",cal:150,t:"p"},
+{name:"Chicken / Beef Soup",emoji:"🥣",cat:"Makanan",cal:130,t:"ps"},
+{name:"Tom Yam (Mixed)",emoji:"🥣",cat:"Makanan",cal:180,t:"ps"},
+{name:"Chicken Salad",emoji:"🥗",cat:"Makanan",cal:150,t:"ps"},
+
+/* DRINKS */
+{name:"Teh Tarik (Pulled Milk Tea)",emoji:"🥛",cat:"Minuman",cal:180,t:"m"},
+{name:"Iced Teh O (Sweet Tea)",emoji:"🥤",cat:"Minuman",cal:80,t:"m"},
+{name:"Iced Milo",emoji:"🥛",cat:"Minuman",cal:210,t:"m"},
+{name:"Coffee with Milk",emoji:"☕",cat:"Minuman",cal:150,t:"m"},
+{name:"Kopi O (Black Coffee)",emoji:"☕",cat:"Minuman",cal:60,t:""},
+{name:"Rose Syrup Drink (Sirap)",emoji:"🥤",cat:"Minuman",cal:100,t:"m"},
+{name:"Sirap Bandung (Rose Milk)",emoji:"🥤",cat:"Minuman",cal:180,t:"m"},
+{name:"Iced Lime Juice",emoji:"🍋",cat:"Minuman",cal:80,t:"m"},
+{name:"Orange / Apple Juice",emoji:"🍊",cat:"Minuman",cal:110,t:"m"},
+{name:"Boba Milk Tea",emoji:"🧋",cat:"Minuman",cal:350,t:"m"},
+{name:"Fruit Smoothie",emoji:"🥤",cat:"Minuman",cal:220,t:"m"},
+{name:"Hot Chocolate",emoji:"☕",cat:"Minuman",cal:190,t:"m"},
+{name:"Plain / Mineral Water",emoji:"💧",cat:"Minuman",cal:0,t:"s"},
+
+/* FRUIT */
+{name:"Apple (Red / Green)",emoji:"🍎",cat:"Buah",cal:80,t:"s"},
+{name:"Banana (1)",emoji:"🍌",cat:"Buah",cal:105,t:"s"},
+{name:"Orange",emoji:"🍊",cat:"Buah",cal:60,t:"s"},
+{name:"Watermelon (1 slice)",emoji:"🍉",cat:"Buah",cal:45,t:"s"},
+{name:"Mango (1 slice)",emoji:"🥭",cat:"Buah",cal:130,t:"s"},
+{name:"Pineapple (1 slice)",emoji:"🍍",cat:"Buah",cal:50,t:"s"},
+{name:"Grapes (10 pcs)",emoji:"🍇",cat:"Buah",cal:70,t:"s"},
+{name:"Strawberries (5 pcs)",emoji:"🍓",cat:"Buah",cal:30,t:"s"},
+{name:"Papaya (1 slice)",emoji:"🍈",cat:"Buah",cal:55,t:"s"},
+{name:"Kiwi",emoji:"🥝",cat:"Buah",cal:42,t:"s"},
+{name:"Durian (2 seeds)",emoji:"👑",cat:"Buah",cal:150,t:"s"},
+
+/* SNACKS */
+{name:"Keropok Lekor (5 sticks)",emoji:"🍢",cat:"Snek",cal:220,t:"g"},
+{name:"Curry Puff (1)",emoji:"🥟",cat:"Snek",cal:130,t:"g"},
+{name:"Banana Fritters (2 pcs)",emoji:"🍌",cat:"Snek",cal:180,t:"g"},
+{name:"Kuih Seri Muka (1 pc)",emoji:"🟩",cat:"Snek",cal:140,t:"m"},
+{name:"Kuih Ketayap (1 pc)",emoji:"🥞",cat:"Snek",cal:120,t:"m"},
+{name:"Chicken / Beef Bun (Pau)",emoji:"🥟",cat:"Snek",cal:200,t:"p"},
+{name:"French Fries",emoji:"🍟",cat:"Snek",cal:310,t:"g"},
+{name:"Popcorn",emoji:"🍿",cat:"Snek",cal:150,t:""},
+{name:"Potato Chips",emoji:"🥔",cat:"Snek",cal:160,t:"g"},
+{name:"Chocolate Cookies (3 pcs)",emoji:"🍪",cat:"Snek",cal:140,t:"m"},
+{name:"Chicken Nuggets (4 pcs)",emoji:"🍗",cat:"Snek",cal:190,t:"gp"},
+{name:"Grilled Sausage",emoji:"🌭",cat:"Snek",cal:150,t:"p"},
+{name:"Peanuts (a handful)",emoji:"🥜",cat:"Snek",cal:170,t:"ps"},
+
+/* DESSERTS */
+{name:"Cendol (1 bowl)",emoji:"🍧",cat:"Pencuci",cal:250,t:"m"},
+{name:"Ais Kacang (ABC)",emoji:"🍧",cat:"Pencuci",cal:280,t:"m"},
+{name:"Chocolate Cake (1 slice)",emoji:"🍫",cat:"Pencuci",cal:350,t:"m"},
+{name:"Cheesecake (1 slice)",emoji:"🍰",cat:"Pencuci",cal:400,t:"m"},
+{name:"Chocolate / Sugar Donut",emoji:"🍩",cat:"Pencuci",cal:250,t:"gm"},
+{name:"Ice Cream (1 scoop)",emoji:"🍦",cat:"Pencuci",cal:180,t:"m"},
+{name:"Chocolate Bar (Small)",emoji:"🍫",cat:"Pencuci",cal:210,t:"m"},
+{name:"Brownie",emoji:"🍫",cat:"Pencuci",cal:240,t:"m"},
+{name:"Caramel Pudding",emoji:"🍮",cat:"Pencuci",cal:150,t:"m"},
+{name:"Kaya / Chocolate Waffle",emoji:"🧇",cat:"Pencuci",cal:290,t:"m"}
+];
+
+/* Real categories (for colours & calorie breakdown). IDs are internal. */
+const catDefs = [
+    {id:"Nasi",    label:"Rice",           emoji:"🍚", color:"var(--c-nasi)"},
+    {id:"Makanan", label:"Meals",          emoji:"🍔", color:"var(--c-makanan)"},
+    {id:"Minuman", label:"Drinks",         emoji:"🧋", color:"var(--c-minuman)"},
+    {id:"Buah",    label:"Fruit",          emoji:"🍎", color:"var(--c-buah)"},
+    {id:"Snek",    label:"Snacks / Kuih",  emoji:"🍿", color:"var(--c-snek)"},
+    {id:"Pencuci", label:"Desserts",       emoji:"🍰", color:"var(--c-pencuci)"}
+];
+const catIds = catDefs.map(c => c.id);
+const catEmoji = {Nasi:"🍚", Makanan:"🍽️", Minuman:"🥤", Buah:"🍑", Snek:"🍡", Pencuci:"🍰"};
+const catLabelOf = id => (catDefs.find(c => c.id === id) || {}).label || id;
+const levelLabel = {ringan:"light", sederhana:"moderate", tinggi:"vigorous"};
+
+/* Average burn rates (kcal/hour) for an adult of ~60 kg */
+const activityMaster = [
+    {emoji:"🚶", name:"Easy Walk", calPerJam:200, level:"ringan", desc:"Gentle, and good for circulation."},
+    {emoji:"🧘", name:"Yoga / Stretching", calPerJam:180, level:"ringan", desc:"Builds flexibility and calm."},
+    {emoji:"🧹", name:"Tidying / Sweeping", calPerJam:170, level:"ringan", desc:"Productive everyday activity at home."},
+    {emoji:"🏓", name:"Ping Pong", calPerJam:280, level:"sederhana", desc:"Trains reflexes and coordination."},
+    {emoji:"🚶‍♂️", name:"Brisk Walk", calPerJam:320, level:"sederhana", desc:"Moderate cardio that's easy on the joints."},
+    {emoji:"🚲", name:"Leisure Cycling", calPerJam:350, level:"sederhana", desc:"Strengthens legs while enjoying fresh air."},
+    {emoji:"🎵", name:"Dancing / Zumba", calPerJam:400, level:"sederhana", desc:"Fun movement to the beat of the music."},
+    {emoji:"🏸", name:"Badminton", calPerJam:450, level:"tinggi", desc:"A fast, active and fun sport."},
+    {emoji:"🪜", name:"Stair Climbing", calPerJam:500, level:"tinggi", desc:"Effective exercise for leg muscles."},
+    {emoji:"🏊", name:"Swimming", calPerJam:500, level:"tinggi", desc:"Joint-friendly full-body cardio."},
+    {emoji:"⚽", name:"Futsal / Football", calPerJam:550, level:"tinggi", desc:"High-intensity team sport."},
+    {emoji:"🏃", name:"Jogging", calPerJam:600, level:"tinggi", desc:"Builds heart endurance & stamina."},
+    {emoji:"🪢", name:"Skipping Rope", calPerJam:700, level:"tinggi", desc:"Intense training in a short time."}
+];
+
+/* Lighter swaps: original name -> alternative name */
+const swapMap = {
+    "Teh Tarik (Pulled Milk Tea)":"Iced Teh O (Sweet Tea)",
+    "Iced Milo":"Kopi O (Black Coffee)",
+    "Coffee with Milk":"Kopi O (Black Coffee)",
+    "Boba Milk Tea":"Iced Teh O (Sweet Tea)",
+    "Sirap Bandung (Rose Milk)":"Iced Lime Juice",
+    "Rose Syrup Drink (Sirap)":"Plain / Mineral Water",
+    "Hot Chocolate":"Kopi O (Black Coffee)",
+    "Orange / Apple Juice":"Orange",
+    "Fruit Smoothie":"Banana (1)",
+    "Nasi Lemak with Fried Chicken":"Nasi Lemak (Plain)",
+    "Nasi Kandar (Chicken + Okra)":"Chicken Rice",
+    "Chicken Biryani":"Nasi Kerabu",
+    "Nasi Goreng Kampung":"Chinese Fried Rice",
+    "Fried Chicken (1 piece)":"Grilled Chicken (1 piece)",
+    "Mee Goreng Mamak":"Noodle Soup / Bakso",
+    "Fried Kuey Teow":"Kuey Teow Soup",
+    "Fried Bihun (Rice Vermicelli)":"Bihun Soup",
+    "Curry Mee":"Laksa (Penang / Johor)",
+    "Beef Burger":"Egg / Mayo Sandwich",
+    "Roti Telur (Egg)":"Roti Canai (1 piece)",
+    "French Fries":"Popcorn",
+    "Chicken Nuggets (4 pcs)":"Chicken Satay (5 sticks)",
+    "Cheesecake (1 slice)":"Caramel Pudding",
+    "Chocolate Cake (1 slice)":"Ice Cream (1 scoop)",
+    "Kaya / Chocolate Waffle":"Chicken / Beef Bun (Pau)",
+    "Ais Kacang (ABC)":"Watermelon (1 slice)"
+};
+
+/* Estimate templates for foods that aren't on the list */
+const estTypes = [
+    {id:"nasi",       label:"Rice with dishes / mixed rice",        cal:550, cat:"Nasi",    emoji:"🍛", t:"p"},
+    {id:"nasiplain",  label:"Plain rice / grains (1 bowl)",         cal:200, cat:"Nasi",    emoji:"🍚", t:""},
+    {id:"meekuah",    label:"Noodles / kuey teow / bihun in soup",  cal:350, cat:"Makanan", emoji:"🍜", t:""},
+    {id:"meegoreng",  label:"Fried noodles / kuey teow / bihun",    cal:450, cat:"Makanan", emoji:"🍜", t:"g"},
+    {id:"roti",       label:"Bread / pastry / chapati",             cal:280, cat:"Makanan", emoji:"🫓", t:""},
+    {id:"segera",     label:"Fast food (burger, chicken set)",      cal:550, cat:"Makanan", emoji:"🍔", t:"p"},
+    {id:"lauk",       label:"Chicken / meat dish (1 serving)",      cal:250, cat:"Makanan", emoji:"🍗", t:"p"},
+    {id:"ikan",       label:"Fish / seafood dish",                  cal:180, cat:"Makanan", emoji:"🐟", t:"p"},
+    {id:"sayur",      label:"Vegetables (1 serving)",               cal:70,  cat:"Makanan", emoji:"🥬", t:"s"},
+    {id:"sup",        label:"Soup / tom yam",                       cal:150, cat:"Makanan", emoji:"🥣", t:"s"},
+    {id:"kuih",       label:"Traditional kuih (1 pc)",              cal:130, cat:"Snek",    emoji:"🍡", t:"m"},
+    {id:"snekgoreng", label:"Fried snack (1 small serving)",        cal:200, cat:"Snek",    emoji:"🍤", t:"g"},
+    {id:"kek",        label:"Cake / dessert",                       cal:300, cat:"Pencuci", emoji:"🍰", t:"m"},
+    {id:"minummanis", label:"Sweet / milky drink (1 glass)",        cal:160, cat:"Minuman", emoji:"🥤", t:"m"},
+    {id:"minumkosong",label:"Unsweetened drink (1 glass)",          cal:10,  cat:"Minuman", emoji:"🍵", t:""},
+    {id:"buah",       label:"Fruit (1 serving)",                    cal:70,  cat:"Buah",    emoji:"🍑", t:"s"}
+];
+const sizes = [
+    {id:"kecil",     label:"Small (≈ ¾ of a usual serving)", short:"small",  m:0.7},
+    {id:"sederhana", label:"Medium (usual serving)",         short:"medium", m:1},
+    {id:"besar",     label:"Large / extra (≈ 1½)",           short:"large",  m:1.4}
+];
+const cooks = [
+    {id:"biasa",  label:"Regular",                 m:1},
+    {id:"goreng", label:"Fried / with coconut milk", m:1.25},
+    {id:"ringan", label:"Steamed / boiled / grilled", m:0.85}
+];
+
+const DAILY_REF = 2000;
+const MAX_QTY = 20;
+const STORE_KEY = "afac-en-selection-v1";
+const OLD_STORE_KEY = "afac-en-selection-v0";
+const CUSTOM_KEY = "afac-en-custom-foods-v1";
+const THEME_KEY = "afac-theme";
+
+/* ---------------- FOOD IDS ---------------- */
+foods.forEach((f,i) => { f.id = "b" + i; });
+const nameToId = {};
+foods.forEach(f => { nameToId[f.name] = f.id; });
+const foodMap = {};
+function indexFoods(){
+    for(const k in foodMap) delete foodMap[k];
+    foods.forEach(f => { foodMap[f.id] = f; });
+}
+const F = id => foodMap[id];
+const srcLabel = {ai:"🤖 AI estimate", est:"🧮 estimate by type", manual:"✍️ entered by you"};
+
+let selectedQty = {};
+let currentCategory = "Semua";
+let currentIntensity = "semua";
+let lastTotal = 0;
+
+const $ = id => document.getElementById(id);
+const fmt = n => Number(n).toLocaleString("en-MY");
+const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+/* ---------------- STORAGE (safe if blocked) ---------------- */
+function saveSelection(){
+    try{ localStorage.setItem(STORE_KEY, JSON.stringify(selectedQty)); }catch(e){}
+}
+function saveCustom(){
+    try{
+        const list = foods.filter(f => f.custom).map(({id,name,emoji,cat,cal,t,note,src}) => ({id,name,emoji,cat,cal,t,note,src}));
+        localStorage.setItem(CUSTOM_KEY, JSON.stringify(list));
+    }catch(e){}
+}
+function loadCustom(){
+    try{
+        const list = JSON.parse(localStorage.getItem(CUSTOM_KEY) || "[]");
+        if(Array.isArray(list)) list.forEach(c => {
+            const f = sanitizeFood(c);
+            if(f && c.id && String(c.id).startsWith("c")){ f.id = String(c.id); foods.push(f); }
+        });
+    }catch(e){}
+}
+function loadSelection(){
+    try{
+        let data = JSON.parse(localStorage.getItem(STORE_KEY) || "null");
+        if(!data){
+            const old = JSON.parse(localStorage.getItem(OLD_STORE_KEY) || "{}");
+            data = {};
+            for(const k in old) data["b" + k] = old[k];
+        }
+        for(const k in data){
+            const q = parseInt(data[k],10);
+            if(F(k) && q > 0) selectedQty[k] = Math.min(MAX_QTY, q);
+        }
+    }catch(e){}
+}
+
+/* Clean added food data (from user / AI / storage) */
+function sanitizeFood(c){
+    if(!c) return null;
+    const name = String(c.name || "").replace(/\s+/g," ").trim().slice(0,40);
+    const cal = Math.round(Number(c.cal));
+    if(!name || !isFinite(cal) || cal < 0 || cal > 3000) return null;
+    const cat = catIds.includes(c.cat) ? c.cat : "Makanan";
+    let emoji = String(c.emoji || "").trim();
+    if(!emoji || emoji.length > 8 || /[<>&"']/.test(emoji)) emoji = catEmoji[cat];
+    const t = String(c.t || "").replace(/[^gmsp]/g,"");
+    const note = c.note ? String(c.note).slice(0,160) : "";
+    const src = ["ai","est","manual"].includes(c.src) ? c.src : "manual";
+    return {name, emoji, cat, cal, t, note, src, custom:true};
+}
+
+/* ---------------- THEME ---------------- */
+function applyTheme(theme){
+    if(theme) document.documentElement.setAttribute("data-theme", theme);
+    const isDark = theme ? theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+    $("themeToggle").textContent = isDark ? "☀️" : "🌙";
+}
+$("themeToggle").addEventListener("click", () => {
+    const cur = document.documentElement.getAttribute("data-theme")
+        || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    const next = cur === "dark" ? "light" : "dark";
+    applyTheme(next);
+    try{ localStorage.setItem(THEME_KEY, next); }catch(e){}
+});
+try{ applyTheme(localStorage.getItem(THEME_KEY)); }catch(e){ applyTheme(null); }
+
+/* ---------------- TOAST ---------------- */
+let toastTimer;
+function toast(msg){
+    const t = $("toast");
+    t.textContent = msg;
+    t.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove("show"), 2600);
+}
+
+/* ---------------- CATEGORIES ---------------- */
+function navCategories(){
+    const list = [{id:"Semua", label:"All", emoji:"✨"}, ...catDefs];
+    if(foods.some(f => f.custom)) list.push({id:"Sendiri", label:"My foods", emoji:"⭐"});
+    return list;
+}
+function inCategory(f, cat){
+    if(cat === "Semua") return true;
+    if(cat === "Sendiri") return !!f.custom;
+    return f.cat === cat;
+}
+function renderCategories(){
+    const list = navCategories();
+    if(!list.some(c => c.id === currentCategory)) currentCategory = "Semua";
+    $("categories").innerHTML = list.map(c => {
+        const n = Object.keys(selectedQty).filter(id => inCategory(F(id), c.id)).length;
+        return `<button class="category ${c.id === currentCategory ? "active" : ""}" role="tab"
+                    aria-selected="${c.id === currentCategory}" data-cat="${c.id}">
+                    ${c.emoji} ${c.label}${n ? ` <span class="badge">${n}</span>` : ""}
+                </button>`;
+    }).join("");
+}
+$("categories").addEventListener("click", e => {
+    const btn = e.target.closest("[data-cat]");
+    if(!btn) return;
+    currentCategory = btn.dataset.cat;
+    renderCategories();
+    applyFilter();
+});
+
+/* ---------------- FOOD GRID ---------------- */
+function controlHTML(id){
+    const f = F(id);
+    const qty = selectedQty[id] || 0;
+    const name = esc(f.name);
+    let html;
+    if(qty > 0){
+        html = `<div class="qty-control">
+                    <button class="qty-btn" data-act="dec" aria-label="Decrease ${name}">−</button>
+                    <span class="qty-val" aria-label="Quantity">${qty}</span>
+                    <button class="qty-btn" data-act="inc" aria-label="Increase ${name}" ${qty >= MAX_QTY ? "disabled" : ""}>+</button>
+                </div>`;
+    }else{
+        html = `<button class="select-btn" data-act="inc" aria-label="Add ${name}">+ Add</button>`;
+    }
+    if(f.custom) html += `<button class="del-btn" data-act="del" aria-label="Delete ${name} from the list">Delete</button>`;
+    return html;
+}
+
+function badgeHTML(f){
+    if(f.custom) return `<span class="custom-badge" title="A food you added">⭐ Mine</span>`;
+    if(f.t.includes("s")) return `<span class="tag" title="Fresh / light choice">🌿</span>`;
+    return "";
+}
+
+function cardHTML(f){
+    const qty = selectedQty[f.id] || 0;
+    return `<div class="food ${qty ? "selected" : ""}" data-id="${f.id}">
+                ${badgeHTML(f)}
+                <span class="tick">×<span class="tick-n">${qty}</span></span>
+                <span class="emoji" aria-hidden="true">${esc(f.emoji)}</span>
+                <span class="food-name">${esc(f.name)}</span>
+                <span class="food-cal">${fmt(f.cal)} kcal</span>
+                ${f.custom ? `<span class="food-src" title="${esc(f.note || "")}">${srcLabel[f.src] || srcLabel.manual}</span>` : ""}
+                <div class="ctrl">${controlHTML(f.id)}</div>
+            </div>`;
+}
+
+function buildGrid(){
+    /* added foods are shown first */
+    const ordered = [...foods.filter(f => f.custom).reverse(), ...foods.filter(f => !f.custom)];
+    $("foodGrid").innerHTML = ordered.map(cardHTML).join("");
+}
+
+function updateCard(id, focusAct){
+    const card = $("foodGrid").querySelector(`.food[data-id="${id}"]`);
+    if(!card || !F(id)) return;
+    const qty = selectedQty[id] || 0;
+    card.classList.toggle("selected", qty > 0);
+    card.querySelector(".tick-n").textContent = qty;
+    card.querySelector(".ctrl").innerHTML = controlHTML(id);
+    if(focusAct){
+        const target = card.querySelector(`[data-act="${focusAct}"]:not([disabled])`)
+                    || card.querySelector("[data-act]:not([disabled])");
+        if(target) target.focus();
+    }
+}
+
+function normalize(s){ return String(s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,""); }
+
+function applyFilter(){
+    const raw = $("search").value.trim();
+    const q = normalize(raw);
+    let visible = 0;
+    $("foodGrid").querySelectorAll(".food").forEach(card => {
+        const f = F(card.dataset.id);
+        const okCat = inCategory(f, currentCategory);
+        const okSearch = !q || normalize(f.name).includes(q) || normalize(catLabelOf(f.cat)).includes(q);
+        const show = okCat && okSearch;
+        card.hidden = !show;
+        if(show) visible++;
+    });
+    $("emptyState").classList.toggle("show", visible === 0);
+    $("emptyAddBtn").textContent = raw ? `➕ Add “${raw.slice(0,40)}” as a new food` : "➕ Add a new food";
+    $("searchClear").classList.toggle("show", $("search").value.length > 0);
+}
+
+$("foodGrid").addEventListener("click", e => {
+    const btn = e.target.closest("[data-act]");
+    if(!btn) return;
+    const id = btn.closest(".food").dataset.id;
+    const act = btn.dataset.act;
+    if(act === "del"){
+        if(btn.classList.contains("confirm")){
+            deleteCustom(id);
+        }else{
+            btn.classList.add("confirm");
+            btn.textContent = "Tap again to delete";
+            setTimeout(() => {
+                if(btn.isConnected){ btn.classList.remove("confirm"); btn.textContent = "Delete"; }
+            }, 3000);
+        }
+        return;
+    }
+    changeQty(id, act === "inc" ? 1 : -1, true);
+});
+
+$("search").addEventListener("input", applyFilter);
+$("searchClear").addEventListener("click", () => {
+    $("search").value = "";
+    applyFilter();
+    $("search").focus();
+});
+
+/* ---------------- STATE ---------------- */
+function refreshResultIfShown(){
+    if($("result").classList.contains("show")){
+        if(Object.keys(selectedQty).length) generateAdvice(false);
+        else $("result").classList.remove("show");
+    }
+}
+
+function changeQty(id, delta, fromGrid){
+    const updated = Math.min(MAX_QTY, (selectedQty[id] || 0) + delta);
+    if(updated <= 0) delete selectedQty[id];
+    else selectedQty[id] = updated;
+
+    updateCard(id, fromGrid ? (updated > 0 ? (delta > 0 ? "inc" : "dec") : "inc") : null);
+    updateCount();
+    renderCategories();
+    saveSelection();
+    refreshResultIfShown();
+}
+
+function computeTotals(){
+    const keys = Object.keys(selectedQty).filter(id => F(id));
+    return {
+        keys,
+        types: keys.length,
+        servings: keys.reduce((s,i) => s + selectedQty[i], 0),
+        cal: keys.reduce((s,i) => s + F(i).cal * selectedQty[i], 0)
+    };
+}
+
+function updateCount(){
+    const t = computeTotals();
+    $("count").textContent = t.types;
+    $("itemCount").textContent = t.servings;
+    const totalEl = $("totalCal");
+    totalEl.textContent = fmt(t.cal);
+    if(t.cal !== lastTotal){
+        totalEl.parentElement.classList.remove("bump");
+        void totalEl.offsetWidth;
+        totalEl.parentElement.classList.add("bump");
+        lastTotal = t.cal;
+    }
+    $("analyseBtn").disabled = t.types === 0;
+    document.querySelector(".summary-bar").classList.toggle("idle", t.types === 0);
+    $("clearBtn").disabled = t.types === 0;
+}
+
+function clearSelection(){
+    if(!Object.keys(selectedQty).length) return;
+    selectedQty = {};
+    saveSelection();
+    buildGrid();
+    applyFilter();
+    updateCount();
+    renderCategories();
+    $("result").classList.remove("show");
+    toast("All selections cleared");
+}
+$("clearBtn").addEventListener("click", clearSelection);
+
+function rebuildAll(){
+    indexFoods();
+    buildGrid();
+    renderCategories();
+    applyFilter();
+    updateCount();
+}
+
+/* =========================================================
+   ADD FOODS THAT ARE NOT ON THE LIST
+========================================================= */
+let activeTab = "est";
+let sampleFn = null;
+let aiCtl = null;
+let aiDraft = null;      /* last AI result */
+let aiKey = "";          /* name|size estimated by the AI */
+
+function fillSelect(el, items, getLabel){
+    el.innerHTML = items.map(it => `<option value="${it.id}">${esc(getLabel(it))}</option>`).join("");
+}
+fillSelect($("cfType"), estTypes, t => `${t.label} · ~${t.cal} kcal`);
+fillSelect($("cfSize"), sizes, s => s.label);
+fillSelect($("cfAiSize"), sizes, s => s.label);
+fillSelect($("cfCook"), cooks, c => c.label);
+fillSelect($("cfCat"), catDefs, c => `${c.emoji} ${c.label}`);
+$("cfSize").value = "sederhana";
+$("cfAiSize").value = "sederhana";
+
+/* Guess the food type from the name (for the estimate tab) */
+function guessType(name){
+    const n = normalize(name);
+    const rules = [
+        [/\b(teh|tea|kopi|coffee|milo|jus|juice|air|water|sirap|syrup|susu|milk|minuman|drink|smoothie|latte|soda|tebu|sugarcane|kelapa|coconut)\b/, n.match(/\b(kosong|o kosong|mineral|tanpa gula|plain|unsweetened|no sugar|black)\b/) ? "minumkosong" : "minummanis"],
+        [/\b(sup|soup|soto|tom ?yam|sop|broth)\b/, "sup"],
+        [/\b(mee|mi|noodles?|kuey ?teow|bihun|vermicelli|laksa|pasta|spaghetti|ramen|udon)\b/, /goreng|fried/.test(n) ? "meegoreng" : "meekuah"],
+        [/\b(nasi|rice|biryani|briyani|lemang|pulut|ketupat)\b/, "nasi"],
+        [/\b(burger|pizza|fries|kfc|mcd|set)\b/, "segera"],
+        [/\b(roti|bread|toast|bun|capati|chapati|tosai|thosai|pau|croissant|sandwic|sandwich)\b/, "roti"],
+        [/\b(kek|cake|puding|pudding|aiskrim|ais krim|ice cream|donat|donut|dessert|cendol|coklat|chocolate|brownies?|tart|pie)\b/, "kek"],
+        [/\b(kuih|kueh|onde|seri muka|lapis|bingka|apam|dodol)\b/, "kuih"],
+        [/\b(keropok|kerepek|chips|crisps|cucur|fritters?|goreng pisang|samosa|karipap|curry puff|popia|spring roll|nuggets?)\b/, "snekgoreng"],
+        [/\b(ikan|fish|udang|prawns?|shrimp|sotong|squid|ketam|crab|kerang|clams?|seafood)\b/, "ikan"],
+        [/\b(ayam|chicken|daging|beef|meat|kambing|mutton|lamb|rendang|satay|lembu)\b/, "lauk"],
+        [/\b(sayur|vegetables?|veggies?|kangkung|salad|bayam|spinach|brokoli|broccoli|kobis|cabbage|ulam)\b/, "sayur"],
+        [/\b(buah|fruit|epal|apple|pisang|banana|mangga|mango|rambutan|manggis|mangosteen|jambu|guava|ciku|limau|langsat|nangka|jackfruit|cempedak|pear|berries)\b/, "buah"]
+    ];
+    for(const [re, id] of rules) if(re.test(n)) return id;
+    return null;
+}
+let typeTouched = false;
+let cookTouched = false;
+$("cfType").addEventListener("change", () => { typeTouched = true; syncCookState(); updateDraft(); });
+$("cfCook").addEventListener("change", () => { cookTouched = true; updateDraft(); });
+["cfSize","cfCal","cfCat","cfFried","cfSweet","cfAiSize"].forEach(id => {
+    $(id).addEventListener("input", updateDraft);
+    $(id).addEventListener("change", updateDraft);
+});
+$("cfName").addEventListener("input", () => {
+    const g = guessType($("cfName").value);
+    if(g && !typeTouched){ $("cfType").value = g; syncCookState(); }
+    if(!cookTouched){
+        const n = normalize($("cfName").value);
+        if(/goreng|fried|santan|coconut|lemak|rendang|kari|curry/.test(n)) $("cfCook").value = "goreng";
+        else if(/kukus|steamed|rebus|boiled|bakar|panggang|grill|baked|roast/.test(n)) $("cfCook").value = "ringan";
+        else $("cfCook").value = "biasa";
+    }
+    updateDraft();
+});
+$("cfName").addEventListener("keydown", e => {
+    if(e.key === "Enter"){
+        e.preventDefault();
+        if(activeTab === "ai" && sampleFn) runAI();
+        else if(!$("cfAdd").disabled) addCustomFood();
+    }
+});
+function syncCookState(){
+    const type = estTypes.find(t => t.id === $("cfType").value);
+    const noCook = type && (type.cat === "Minuman" || type.cat === "Buah");
+    $("cfCook").disabled = noCook;
+    if(noCook) $("cfCook").value = "biasa";
+}
+
+function setTab(tab){
+    activeTab = tab;
+    document.querySelectorAll("#cfTabs [data-tab]").forEach(b => {
+        const on = b.dataset.tab === tab;
+        b.classList.toggle("active", on);
+        b.setAttribute("aria-selected", on);
+    });
+    document.querySelectorAll("#customPanel [data-pane]").forEach(p => { p.hidden = p.dataset.pane !== tab; });
+    updateDraft();
+}
+$("cfTabs").addEventListener("click", e => {
+    const b = e.target.closest("[data-tab]");
+    if(b) setTab(b.dataset.tab);
+});
+
+function currentDraft(){
+    const name = $("cfName").value.replace(/\s+/g," ").trim();
+    if(activeTab === "est"){
+        const type = estTypes.find(t => t.id === $("cfType").value);
+        const size = sizes.find(s => s.id === $("cfSize").value);
+        const cook = cooks.find(c => c.id === $("cfCook").value);
+        const cal = Math.round(type.cal * size.m * cook.m / 5) * 5;
+        let t = type.t;
+        if(cook.id === "goreng" && !t.includes("g")) t += "g";
+        if(cook.id === "ringan") t = t.replace("g","");
+        return {name, cal, cat:type.cat, emoji:type.emoji, t,
+                src:"est", note:`Estimate by type: ${type.label.toLowerCase()}, ${size.short} size, ${cook.label.toLowerCase()}.`};
+    }
+    if(activeTab === "manual"){
+        const calStr = $("cfCal").value;
+        if(calStr === "") return {name, cal:null, cat:$("cfCat").value, emoji:catEmoji[$("cfCat").value], t:"", note:"Enter the number of calories."};
+        const cal = Math.round(Number(calStr));
+        const t = ($("cfFried").checked ? "g" : "") + ($("cfSweet").checked ? "m" : "");
+        return {name, cal, cat:$("cfCat").value, emoji:catEmoji[$("cfCat").value], t, src:"manual", note:"Calories entered by you."};
+    }
+    /* ai */
+    const key = name + "|" + $("cfAiSize").value;
+    if(aiDraft && aiKey === key) return {...aiDraft, name};
+    return {name, cal:null, cat:"Makanan", emoji:"🤖", t:"", note: name ? "Tap “Estimate calories” to get an AI estimate." : ""};
+}
+
+function updateDraft(){
+    const d = currentDraft();
+    const valid = d.name && d.cal !== null && isFinite(d.cal) && d.cal >= 0 && d.cal <= 3000;
+    $("pvEmoji").textContent = d.emoji || "🍽️";
+    $("pvName").textContent = d.name || "Food name";
+    const catLabel = (catDefs.find(c => c.id === d.cat) || {}).label || d.cat;
+    $("pvMeta").textContent = d.cal !== null && isFinite(d.cal) ? `${fmt(d.cal)} kcal · ${catLabel}` : "— kcal";
+    let note = d.note || "";
+    if(d.cal !== null && (d.cal < 0 || d.cal > 3000)) note = "Calories must be between 0 and 3,000 kcal.";
+    if(!d.name) note = "Type the food name first.";
+    const dup = d.name && foods.find(f => normalize(f.name) === normalize(d.name));
+    if(dup) note = `“${dup.name}” is already on the list. You can still add your own version.`;
+    $("pvNote").textContent = note;
+    $("cfAdd").disabled = !valid;
+}
+
+function openPanel(prefill){
+    $("customPanel").hidden = false;
+    if(prefill){
+        $("cfName").value = prefill.slice(0,40);
+        $("cfName").dispatchEvent(new Event("input"));
+    }
+    updateDraft();
+    $("customPanel").scrollIntoView({behavior:"smooth", block:"start"});
+    setTimeout(() => $("cfName").focus({preventScroll:true}), 250);
+}
+function closePanel(){
+    aiCtl?.abort();
+    $("customPanel").hidden = true;
+    $("openPanelBtn").focus();
+}
+$("openPanelBtn").addEventListener("click", () => openPanel($("search").value.trim()));
+$("closePanelBtn").addEventListener("click", closePanel);
+$("emptyAddBtn").addEventListener("click", () => openPanel($("search").value.trim()));
+
+function addCustomFood(){
+    const d = currentDraft();
+    const f = sanitizeFood(d);
+    if(!f){ toast("Fill in the name and calories first"); return; }
+    f.id = "c" + Date.now().toString(36) + Math.random().toString(36).slice(2,5);
+    foods.push(f);
+    selectedQty[f.id] = 1;
+    saveCustom();
+    saveSelection();
+    /* reset form */
+    $("cfName").value = ""; $("cfCal").value = "";
+    $("cfFried").checked = false; $("cfSweet").checked = false;
+    typeTouched = false; cookTouched = false;
+    aiDraft = null; aiKey = "";
+    $("cfAiStatus").textContent = "The AI will estimate the calories, category and food type based on a typical serving in Malaysia.";
+    $("cfAiStatus").className = "ai-status";
+    $("search").value = "";
+    $("customPanel").hidden = true;
+    rebuildAll();
+    refreshResultIfShown();
+    const card = $("foodGrid").querySelector(`.food[data-id="${f.id}"]`);
+    if(card){
+        card.scrollIntoView({behavior:"smooth", block:"center"});
+        card.classList.add("bump");
+    }
+    toast(`${f.name} added & selected ✅`);
+}
+$("cfAdd").addEventListener("click", addCustomFood);
+
+function deleteCustom(id){
+    const f = F(id);
+    if(!f || !f.custom) return;
+    delete selectedQty[id];
+    foods = foods.filter(x => x.id !== id);
+    saveCustom();
+    saveSelection();
+    rebuildAll();
+    refreshResultIfShown();
+    toast(`${f.name} deleted from the list`);
+}
+
+/* ---- Ask AI (only when the page is opened in Claude) ---- */
+const AI_UNAVAILABLE = ["not_granted","sampling_disabled","not_declared","capability_disabled","capability_removed"];
+function aiMessage(code){
+    switch(code){
+        case "rate_limited":    return "Too many requests right now. Try again shortly, or use the “Estimate by type” tab.";
+        case "session_expired": return "Please sign in to Claude again, then try again.";
+        case "refused":         return "The AI couldn't estimate this. Try writing the food name a different way.";
+        case "invalid_json":
+        case "empty_completion":return "The AI's answer was incomplete. Tap “Estimate calories” again.";
+        case "cancelled":       return "Estimate stopped.";
+        default:                return "Connection problem. Tap “Estimate calories” to try again.";
+    }
+}
+async function runAI(){
+    const name = $("cfName").value.replace(/\s+/g," ").trim();
+    if(!name){ $("cfName").focus(); toast("Type the food name first"); return; }
+    if(!sampleFn) return;
+    const size = sizes.find(s => s.id === $("cfAiSize").value);
+    const prompt =
+`You are a Malaysian nutrition expert. Estimate the calories for ONE serving of the following food/drink as it is usually sold or served in Malaysia.
+
+Name: "${name}"
+Serving size: ${size.label}
+
+Reply with JSON only, in this shape:
+{"food": true, "cal": 350, "cat": "Makanan", "emoji": "🍜", "fried": false, "sweet": false, "fresh": false, "protein": true, "note": "One short sentence in English about the serving size assumed."}
+
+Rules:
+- "cal": integer kcal for the stated size (0 to 3000).
+- "cat": must be one of these category codes: "Nasi" (rice dishes), "Makanan" (other meals), "Minuman" (drinks), "Buah" (fruit), "Snek" (snacks/kuih), "Pencuci" (desserts).
+- "emoji": the single most fitting food emoji.
+- "fried": fried/oily; "sweet": high in sugar; "fresh": fruit/vegetables/light soup or plain water; "protein": a significant protein source.
+- If the input is not a food or drink, reply {"food": false}.`;
+    aiCtl = new AbortController();
+    const btn = $("cfAiBtn"), stop = $("cfAiStop"), status = $("cfAiStatus");
+    btn.disabled = true; stop.hidden = false;
+    status.className = "ai-status dots";
+    status.textContent = "The AI is estimating";
+    try{
+        const r = await sampleFn.json(prompt, {modelTier:"quick", signal: aiCtl.signal});
+        if(!r || r.food === false){
+            aiDraft = null;
+            status.className = "ai-status err";
+            status.textContent = "That doesn't look like a food or drink. Try another name.";
+        }else{
+            const t = (r.fried ? "g" : "") + (r.sweet ? "m" : "") + (r.fresh ? "s" : "") + (r.protein ? "p" : "");
+            const f = sanitizeFood({name, cal:r.cal, cat:r.cat, emoji:r.emoji, t, note:r.note});
+            if(!f){
+                aiDraft = null;
+                status.className = "ai-status err";
+                status.textContent = aiMessage("invalid_json");
+            }else{
+                aiDraft = {cal:f.cal, cat:f.cat, emoji:f.emoji, t:f.t,
+                           src:"ai", note:"🤖 AI estimate" + (f.note ? ": " + f.note : ".")};
+                aiKey = name + "|" + size.id;
+                status.className = "ai-status";
+                status.textContent = "Done! Check the estimate below. Switch to “I know the calories” if you want to change the value.";
+            }
+        }
+    }catch(e){
+        const code = e && e.code;
+        if(AI_UNAVAILABLE.includes(code)){
+            disableAI();
+            toast("AI isn't available here. Use the estimate by type.");
+        }else{
+            status.className = "ai-status" + (code === "cancelled" ? "" : " err");
+            status.textContent = aiMessage(code);
+        }
+    }finally{
+        btn.disabled = false; stop.hidden = true;
+        updateDraft();
+    }
+}
+function disableAI(){
+    sampleFn = null;
+    $("tabAi").hidden = true;
+    if(activeTab === "ai") setTab("est");
+}
+$("cfAiBtn").addEventListener("click", runAI);
+$("cfAiStop").addEventListener("click", () => aiCtl?.abort());
+
+(async () => {
+    try{
+        const s = window.claude && typeof window.claude.use === "function"
+            ? await window.claude.use("sample") : null;
+        if(s){
+            sampleFn = s;
+            $("tabAi").hidden = false;
+            if($("customPanel").hidden) setTab("ai");
+        }
+    }catch(e){}
+})();
+
+/* =========================================================
+   ANALYSIS
+========================================================= */
+function generateAdvice(scroll = true){
+    const t = computeTotals();
+    if(t.types === 0){
+        toast("Pick at least one food first 😊");
+        return;
+    }
+    const total = t.cal;
+
+    /* ---- Level & ring ---- */
+    let level, levelClass, advice;
+    if(total < 300){
+        level = "Light / Snack"; levelClass = "level-low";
+        advice = `Total ${fmt(total)} kcal: suitable as a snack or light meal.`;
+    }else if(total <= 700){
+        level = "Moderate Meal"; levelClass = "level-mid";
+        advice = `Total ${fmt(total)} kcal: a typical range for one main meal for most people.`;
+    }else{
+        level = "Heavy Meal"; levelClass = "level-high";
+        advice = `Total ${fmt(total)} kcal: energy-dense for one meal. That's fine once in a while, just balance it at other meals.`;
+    }
+    if(t.keys.some(i => F(i).custom)) advice += " Added foods (⭐) use rough estimates.";
+    $("advice").textContent = advice;
+    const pill = $("levelPill");
+    pill.textContent = level;
+    pill.className = "level-pill " + levelClass;
+
+    const pct = Math.round(total / DAILY_REF * 100);
+    $("resTotalCal").textContent = fmt(total);
+    $("dailyPct").textContent = pct + "%";
+    $("ringWrap").setAttribute("aria-label", `${total} kcal, about ${pct} percent of the daily reference`);
+    const C = 2 * Math.PI * 72;
+    const bar = $("ringBar");
+    bar.style.strokeDasharray = C;
+    bar.style.strokeDashoffset = C;
+    requestAnimationFrame(() => {
+        bar.style.strokeDashoffset = C * (1 - Math.min(pct, 100) / 100);
+    });
+
+    /* ---- Category breakdown ---- */
+    const byCat = {};
+    t.keys.forEach(i => {
+        const f = F(i);
+        byCat[f.cat] = (byCat[f.cat] || 0) + f.cal * selectedQty[i];
+    });
+    const catList = catDefs.filter(c => byCat[c.id] > 0);
+    $("stackBar").innerHTML = total > 0
+        ? catList.map(c => `<span style="width:${byCat[c.id]/total*100}%;background:${c.color}" title="${c.label}: ${byCat[c.id]} kcal"></span>`).join("")
+        : "";
+    $("legend").innerHTML = catList.map(c =>
+        `<span><i style="background:${c.color}"></i>${c.label}: <strong>${fmt(byCat[c.id])}</strong> kcal (${total ? Math.round(byCat[c.id]/total*100) : 0}%)</span>`
+    ).join("") || `<span style="color:var(--muted)">No calories (plain water only) 💧</span>`;
+
+    /* ---- Chips ---- */
+    $("selectedFoods").innerHTML = [...t.keys]
+        .sort((a,b) => F(b).cal*selectedQty[b] - F(a).cal*selectedQty[a])
+        .map(i => {
+            const f = F(i), q = selectedQty[i];
+            return `<span class="chip">${esc(f.emoji)} ${esc(f.name)}${f.custom ? " ⭐" : ""} × ${q} <strong>(${fmt(f.cal*q)} kcal)</strong>
+                    <button data-remove="${i}" aria-label="Remove ${esc(f.name)}">✕</button></span>`;
+        }).join("");
+
+    /* ---- Smart tips ---- */
+    $("tips").innerHTML = buildTips(t, byCat, total).map(tp =>
+        `<div class="tip ${tp.type || ""}"><span class="ico">${tp.ico}</span><div><strong>${tp.title}</strong>${tp.text}</div></div>`
+    ).join("");
+
+    /* ---- Swaps ---- */
+    const swaps = t.keys
+        .filter(i => !F(i).custom && swapMap[F(i).name] && nameToId[swapMap[F(i).name]])
+        .map(i => {
+            const alt = nameToId[swapMap[F(i).name]];
+            return {from:i, to:alt, save:(F(i).cal - F(alt).cal) * selectedQty[i]};
+        })
+        .filter(s => s.save > 0)
+        .sort((a,b) => b.save - a.save)
+        .slice(0,4);
+    $("swapSection").style.display = swaps.length ? "" : "none";
+    $("swaps").innerHTML = swaps.map(s => `
+        <div class="swap">
+            <span>${F(s.from).emoji} ${esc(F(s.from).name)} <span class="arrow">→</span> ${F(s.to).emoji} ${esc(F(s.to).name)}</span>
+            <span style="display:flex;gap:6px;align-items:center">
+                <span class="save">−${fmt(s.save)} kcal</span>
+                <button data-swap="${s.from}:${s.to}">Swap</button>
+            </span>
+        </div>`).join("");
+
+    /* ---- Activities ---- */
+    renderIntensityFilter();
+    renderActivities(total);
+
+    $("result").classList.add("show");
+    if(scroll){
+        $("result").scrollIntoView({behavior:"smooth", block:"start"});
+        $("result").focus({preventScroll:true});
+    }
+}
+
+function buildTips(t, byCat, total){
+    const tips = [];
+    const has = flag => t.keys.some(i => F(i).t.includes(flag));
+    const count = flag => t.keys.reduce((s,i) => s + (F(i).t.includes(flag) ? selectedQty[i] : 0), 0);
+
+    const sweetDrinks = t.keys.filter(i => F(i).cat === "Minuman" && F(i).t.includes("m"));
+    const hasWater = t.keys.some(i => F(i).name.startsWith("Plain"));
+    const fried = count("g");
+    const fruitOrFresh = t.keys.some(i => F(i).t.includes("s") && F(i).cat !== "Minuman");
+    const protein = has("p");
+    const dessertCal = byCat["Pencuci"] || 0;
+
+    if(hasWater){
+        tips.push({type:"good", ico:"💧", title:"Great, you have plain water!", text:"Plain water helps digestion and has no added sugar."});
+    }
+    if(sweetDrinks.length){
+        const cal = sweetDrinks.reduce((s,i) => s + F(i).cal*selectedQty[i], 0);
+        tips.push({type:"warn", ico:"🥤", title:`Sweet drinks add ${fmt(cal)} kcal`,
+            text:"Try asking for <em>less sweet</em> or alternating with plain water. It's one of the easiest ways to cut sugar."});
+    }else if(!hasWater){
+        tips.push({ico:"💧", title:"Don't forget water", text:"Add a glass of plain water to your meal."});
+    }
+    if(fried >= 2){
+        tips.push({type:"warn", ico:"🍳", title:`${fried} fried servings selected`,
+            text:"Nothing wrong with that, but try swapping one for a grilled, steamed or soup version to cut down on oil."});
+    }
+    if(!fruitOrFresh && total > 0){
+        tips.push({ico:"🥦", title:"Add vegetables or fruit", text:"Follow the <em>Quarter-Quarter-Half</em> plate: half vegetables & fruit, a quarter protein, a quarter carbohydrates."});
+    }else if(fruitOrFresh){
+        tips.push({type:"good", ico:"🍎", title:"Fresh choices included", text:"Fruit, vegetables or soup add fibre, vitamins and help you feel full."});
+    }
+    if(!protein && total >= 250){
+        tips.push({ico:"🥚", title:"Consider a protein source", text:"Eggs, chicken, fish, tofu or legumes help you stay full for longer."});
+    }
+    if(dessertCal > 0 && dessertCal / (total || 1) > 0.4){
+        tips.push({ico:"🍰", title:"Mostly dessert", text:"Enjoy it! If you like, share with a friend or pick a smaller size."});
+    }
+    if(total > 700){
+        tips.push({ico:"⚖️", title:"Balance your next meal", text:"Choose something lighter like soup, salad or fruit at your next meal. No need to skip meals."});
+    }else if(total < 300 && total > 0){
+        tips.push({ico:"⏰", title:"A good snack", text:"Good for keeping your energy up between meals. If this is a main meal, add protein & vegetables."});
+    }
+    return tips.slice(0,5);
+}
+
+function renderIntensityFilter(){
+    const opts = [["semua","All"],["ringan","Light"],["sederhana","Moderate"],["tinggi","Vigorous"]];
+    $("intensityFilter").innerHTML = opts.map(([id,l]) =>
+        `<button class="category ${currentIntensity === id ? "active" : ""}" data-int="${id}">${l}</button>`).join("");
+}
+
+function renderActivities(total){
+    const list = activityMaster.filter(a => currentIntensity === "semua" || a.level === currentIntensity);
+    $("activities").innerHTML = list.map(a => {
+        const mins = Math.max(1, Math.round(total / a.calPerJam * 60));
+        const cap = a.level === "tinggi" ? 30 : 45;
+        let sessionTxt;
+        if(total === 0) sessionTxt = "No energy to balance 😊";
+        else if(mins <= cap) sessionTxt = "Fits in one session";
+        else {
+            const n = Math.ceil(mins / cap);
+            sessionTxt = `≈ ${n} sessions × ${cap} min (can be spread over several days)`;
+        }
+        return `<div class="activity">
+                    <div class="activity-top">
+                        <span class="activity-icon" aria-hidden="true">${a.emoji}</span>
+                        <span class="intensity int-${a.level}">${levelLabel[a.level]}</span>
+                    </div>
+                    <strong>${a.name}</strong>
+                    <span class="time">${total === 0 ? "0" : "~" + mins} min</span>
+                    <span class="sessions">${sessionTxt}</span>
+                    <span class="desc">${a.desc}</span>
+                </div>`;
+    }).join("");
+}
+
+$("intensityFilter").addEventListener("click", e => {
+    const b = e.target.closest("[data-int]");
+    if(!b) return;
+    currentIntensity = b.dataset.int;
+    renderIntensityFilter();
+    renderActivities(computeTotals().cal);
+});
+
+/* Remove from chips & swaps */
+$("result").addEventListener("click", e => {
+    const rm = e.target.closest("[data-remove]");
+    if(rm){
+        const i = rm.dataset.remove;
+        const name = F(i).name;
+        changeQty(i, -(selectedQty[i] || 0), false);
+        toast(`${name} removed`);
+        return;
+    }
+    const sw = e.target.closest("[data-swap]");
+    if(sw){
+        const [from, to] = sw.dataset.swap.split(":");
+        const q = selectedQty[from] || 0;
+        if(!q) return;
+        delete selectedQty[from];
+        selectedQty[to] = Math.min(MAX_QTY, (selectedQty[to] || 0) + q);
+        updateCard(from); updateCard(to);
+        updateCount(); renderCategories(); saveSelection();
+        generateAdvice(false);
+        toast(`Swapped to ${F(to).name} ✅`);
+    }
+});
+
+/* Copy summary */
+$("copyBtn").addEventListener("click", async () => {
+    const t = computeTotals();
+    const lines = t.keys.map(i => `• ${F(i).name}${F(i).custom ? " (estimate)" : ""} × ${selectedQty[i]} = ${F(i).cal*selectedQty[i]} kcal`);
+    const text = `🥗 AI Food & Activity Coach\n${lines.join("\n")}\n🔥 Total: ${t.cal} kcal (≈${Math.round(t.cal/DAILY_REF*100)}% of the 2,000 kcal daily reference)`;
+    try{
+        await navigator.clipboard.writeText(text);
+        toast("Summary copied 📋");
+    }catch(e){
+        const ta = document.createElement("textarea");
+        ta.value = text; document.body.appendChild(ta); ta.select();
+        try{ document.execCommand("copy"); toast("Summary copied 📋"); }
+        catch(err){ toast("Couldn't copy. Please copy it manually."); }
+        ta.remove();
+    }
+});
+
+$("analyseBtn").addEventListener("click", () => generateAdvice(true));
+
+/* =========================================================
+   NUTRITION QUIZ
+========================================================= */
+const quizBank = [
+    {q:"According to the Malaysian Healthy Plate (“Quarter-Quarter-Half”), what should fill HALF of your plate?",
+     opts:["Vegetables and fruit","Rice, noodles or bread","Chicken, fish or eggs","Kuih and desserts"], a:0,
+     exp:"Half the plate is vegetables and fruit, a quarter is carbohydrates (rice, noodles, bread) and a quarter is protein (fish, chicken, eggs, legumes)."},
+    {q:"On the Malaysian Healthy Plate, how much of the plate is for carbohydrates like rice?",
+     opts:["A quarter of the plate","Half the plate","Three quarters of the plate","The whole plate"], a:0,
+     exp:"Carbohydrates take a quarter of the plate. Choose whole grains like brown rice or wholemeal bread for more fibre."},
+    {q:"Which nutrient is most important for building and repairing body tissues such as muscle?",
+     opts:["Protein","Carbohydrates","Fat","Vitamin C"], a:0,
+     exp:"Protein builds and repairs tissue. Sources include fish, chicken, eggs, milk, tofu and legumes."},
+    {q:"Which of these drinks has no added sugar?",
+     opts:["Plain water","Teh tarik","Iced Milo","Sirap bandung"], a:0,
+     exp:"Plain water has no sugar and no calories. Sweet drinks can be ordered “less sweet” if you want to enjoy them."},
+    {q:"Which cooking method usually uses the least oil?",
+     opts:["Steaming","Deep frying","Pan frying","Cooking with thick coconut milk"], a:0,
+     exp:"Steaming, boiling and grilling use little or no oil compared with frying."},
+    {q:"What does BMR (Basal Metabolic Rate) mean?",
+     opts:["The energy your body uses at rest for basic functions like breathing","The number of calories in one serving","The energy burned only during sport","Your heart rate while running"], a:0,
+     exp:"BMR is the energy for basic body functions (breathing, heart, brain). It is usually the largest part of our daily energy use."},
+    {q:"On a nutrition label, what unit is “Energy” usually given in?",
+     opts:["kcal (and kJ)","grams","milligrams","millilitres"], a:0,
+     exp:"Energy is shown in kilocalories (kcal) and kilojoules (kJ). 1 kcal ≈ 4.2 kJ."},
+    {q:"According to the WHO, how active should children and teenagers (5–17 years) be?",
+     opts:["An average of at least 60 minutes a day","10 minutes a week","Only at weekends","3 hours non-stop a day"], a:0,
+     exp:"The WHO recommends an average of 60 minutes a day of moderate to vigorous activity. Walking, sports and dancing all count."},
+    {q:"The WHO recommends limiting free (added) sugars to less than what percentage of daily energy?",
+     opts:["10%","30%","50%","75%"], a:0,
+     exp:"Less than 10% of daily energy, and ideally below 5%. For 2,000 kcal, 10% is about 50 g of sugar."},
+    {q:"Which snack is best 30–60 minutes before exercise?",
+     opts:["A banana","A plate of nasi kandar","A slice of cheesecake","A big bag of potato chips"], a:0,
+     exp:"A banana gives easily digested carbohydrates for quick energy without feeling too full."},
+    {q:"Which of these is a plant source of protein?",
+     opts:["Tofu and tempeh","White rice","Apples","Cooking oil"], a:0,
+     exp:"Tofu, tempeh, lentils and nuts are good plant sources of protein."},
+    {q:"Which foods are rich in fibre?",
+     opts:["Vegetables, fruit and whole grains","Rose syrup drink","Fried chicken","Ice cream"], a:0,
+     exp:"Fibre helps digestion and keeps you full. It's found in vegetables, fruit, legumes and whole grains like oats."},
+    {q:"What is one simple sign that your body may be short of water?",
+     opts:["Dark yellow urine","Feeling hungry after sport","Sleeping well","Hair growing fast"], a:0,
+     exp:"Dark yellow urine, a dry mouth and dizziness are early signs of dehydration. Drink plain water regularly."},
+    {q:"“Mindful eating” means…",
+     opts:["Eating slowly and noticing hunger and fullness","Eating while watching your phone","Not eating at all at night","Counting every calorie exactly"], a:0,
+     exp:"Mindful eating helps us enjoy food and stop when we're full."},
+    {q:"Which foods are high in vitamin C?",
+     opts:["Guava and oranges","White bread","Rice","Butter"], a:0,
+     exp:"Fruits like guava, oranges, papaya and kiwi are rich in vitamin C, which supports the immune system."},
+    {q:"Calcium is important for bones and teeth. Which is a good source?",
+     opts:["Milk, anchovies (ikan bilis) and tofu","Fizzy drinks","Sweets","Crisps"], a:0,
+     exp:"Milk and dairy products, anchovies eaten with the bones, tofu and green vegetables provide calcium."},
+    {q:"According to the Malaysian Dietary Guidelines, how many servings of vegetables are recommended a day?",
+     opts:["At least 3 servings","Half a serving","Once a week","None if you eat fruit"], a:0,
+     exp:"At least 3 servings of vegetables and 2 servings of fruit are recommended every day."},
+    {q:"Iron is important because it helps…",
+     opts:["Blood carry oxygen around the body","Strengthen nails only","Make hair straight","Produce saliva"], a:0,
+     exp:"Iron is needed for haemoglobin, which carries oxygen. Sources include meat, fish, eggs, legumes and green vegetables."},
+    {q:"Eating too much salt over a long time is linked to a higher risk of…",
+     opts:["High blood pressure","Short-sightedness","Hair loss","Acne only"], a:0,
+     exp:"Too much sodium (salt) raises the risk of high blood pressure. The WHO recommends less than 5 g of salt a day (about 1 teaspoon)."},
+    {q:"Which foods are usually HIGH in sodium (salt)?",
+     opts:["Instant noodles, sausages and crackers","Fresh apples","Plain water","Unseasoned steamed vegetables"], a:0,
+     exp:"Processed foods and instant seasonings are usually high in sodium. Check the label and choose lower-salt versions."},
+    {q:"On a food label, the ingredients list is ordered by…",
+     opts:["Amount, from most to least","Alphabet, A to Z","Colour of the ingredient","Price of the ingredient"], a:0,
+     exp:"The first ingredient is the one there's most of. If sugar is first or second, the product is high in sugar."},
+    {q:"The KKM “Healthier Choice Logo” on packaging means…",
+     opts:["The product is lower in fat, sugar or salt than similar products","The product can be eaten without limit","The product has no calories","The product is imported"], a:0,
+     exp:"The logo helps you pick healthier products within the same category, but portion size still matters."},
+    {q:"About how many teaspoons of sugar are in one regular can (330 ml) of fizzy drink?",
+     opts:["8 to 9 teaspoons","Half a teaspoon","1 teaspoon","25 teaspoons"], a:0,
+     exp:"One can can contain around 35 g of sugar, which is about 8–9 teaspoons."},
+    {q:"The body can make vitamin D with the help of…",
+     opts:["Sunlight","Drinking cold water","Afternoon naps","Eating sugar"], a:0,
+     exp:"Skin makes vitamin D when exposed to sunlight. Oily fish, eggs and fortified milk also help."},
+    {q:"Which of these is a complex carbohydrate?",
+     opts:["Oats and brown rice","Table sugar","Rose syrup drink","Sweets"], a:0,
+     exp:"Complex carbohydrates are digested more slowly, give steadier energy, and are usually higher in fibre."},
+    {q:"Heart-friendlier fats (unsaturated fats) are found mostly in…",
+     opts:["Fish, nuts and avocado","Butter and hard margarine","Fried chicken skin","Thick creamer"], a:0,
+     exp:"Unsaturated fats from fish, nuts, seeds and avocado are better for the heart than saturated fats."},
+    {q:"How many hours of sleep are recommended for teenagers aged 13–18?",
+     opts:["8 to 10 hours","4 to 5 hours","12 to 14 hours","It doesn't matter"], a:0,
+     exp:"Teenagers need 8–10 hours of sleep for growth, focus while studying and body recovery."},
+    {q:"The Malaysian Dietary Guidelines encourage drinking plain water of about…",
+     opts:["6 to 8 glasses a day","1 glass a day","20 glasses a day","Only when very thirsty"], a:0,
+     exp:"About 6–8 glasses a day, more in hot weather or after exercise."},
+    {q:"Why are we encouraged to eat vegetables and fruit of many colours?",
+     opts:["Each colour provides different vitamins and antioxidants","Just so the plate looks nice","Colour adds calories","No particular reason"], a:0,
+     exp:"Different colours mean different nutrients, like beta-carotene in carrots and lycopene in tomatoes."},
+    {q:"After exercise, which combination helps the body recover best?",
+     opts:["Plain water plus food with protein and carbohydrates","Fizzy drinks only","Not eating at all","Strong coffee only"], a:0,
+     exp:"Water replaces lost fluids, protein helps muscles recover and carbohydrates refill energy."},
+    {q:"Which are common carbohydrate sources in Malaysian meals?",
+     opts:["Rice, bread, noodles and tubers","Fish and chicken","Cooking oil","Salt"], a:0,
+     exp:"Carbohydrates are the main energy source. Rice, bread, noodles, tubers and grains are all carbohydrates."},
+    {q:"Why do sweet drinks add sugar so easily without us noticing?",
+     opts:["They don't fill you up even though they're high in sugar","They never have calories","Sugar disappears in water","The body doesn't absorb liquid sugar"], a:0,
+     exp:"Sugar in drinks goes down quickly and isn't very filling, so it's easy to have too much without realising."}
+];
+quizBank.forEach((item, i) => { item.id = i; });
+const QUIZ_LEN = 5;
+const QUIZ_BANK_PER_ROUND = 3;      /* + 2 generated calorie challenge questions */
+const QUIZ_KEY = "afac-en-quiz-best-v1";
+const QUIZ_SEEN_KEY = "afac-en-quiz-seen-v1";
+const QUIZ_HIST_KEY = "afac-en-quiz-history-v1";
+let quiz = null;
+
+function shuffle(arr){
+    const a = [...arr];
+    for(let i = a.length - 1; i > 0; i--){
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+}
+const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+function readJSON(key, fallback){ try{ const v = JSON.parse(localStorage.getItem(key)); return v ?? fallback; }catch(e){ return fallback; } }
+function writeJSON(key, val){ try{ localStorage.setItem(key, JSON.stringify(val)); }catch(e){} }
+
+/* Past records */
+function getHistory(){
+    const h = readJSON(QUIZ_HIST_KEY, []);
+    return Array.isArray(h) ? h.filter(r => r && isFinite(r.t) && isFinite(r.s) && isFinite(r.n)) : [];
+}
+function addHistory(score, total){
+    const h = getHistory();
+    h.push({t: Date.now(), s: score, n: total});
+    writeJSON(QUIZ_HIST_KEY, h.slice(-50));
+}
+function bestScore(){
+    let old = 0;
+    try{ old = parseInt(localStorage.getItem(QUIZ_KEY) || "0", 10) || 0; }catch(e){}
+    return Math.max(old, ...getHistory().map(r => r.s), 0);
+}
+
+/* Bank questions: prefer ones not seen yet */
+function pickBankQuestions(n){
+    let seen = readJSON(QUIZ_SEEN_KEY, []);
+    if(!Array.isArray(seen)) seen = [];
+    let unseen = shuffle(quizBank.filter(q => !seen.includes(q.id)));
+    let chosen = unseen.slice(0, n);
+    if(chosen.length < n){
+        /* all seen: start a new cycle, avoid repeating the ones just picked */
+        const refill = shuffle(quizBank.filter(q => !chosen.includes(q))).slice(0, n - chosen.length);
+        seen = [];
+        chosen = chosen.concat(refill);
+        seen.push(...refill.map(q => q.id));
+    }else{
+        seen.push(...chosen.map(q => q.id));
+    }
+    writeJSON(QUIZ_SEEN_KEY, seen);
+    return chosen;
+}
+function unseenCount(){
+    const seen = readJSON(QUIZ_SEEN_KEY, []);
+    return quizBank.filter(q => !(Array.isArray(seen) && seen.includes(q.id))).length;
+}
+
+/* Calorie challenge questions generated from the food list (always different) */
+function genQuestion(usedNames){
+    const pool = foods.filter(f => !f.custom && f.cal > 0 && !usedNames.has(f.name));
+    const type = pick(["low","high","cal","cal"]);
+    if(type === "cal"){
+        const f = pick(pool);
+        usedNames.add(f.name);
+        const round10 = n => Math.max(10, Math.round(n / 10) * 10);
+        const distract = [];
+        for(const m of shuffle([0.4, 0.55, 1.6, 1.9, 2.4, 3])){
+            const v = round10(f.cal * m);
+            if(Math.abs(v - f.cal) / f.cal >= 0.3 && !distract.includes(v)) distract.push(v);
+            if(distract.length === 3) break;
+        }
+        const opts = shuffle([{text:`~${fmt(f.cal)} kcal`, correct:true},
+                              ...distract.map(v => ({text:`~${fmt(v)} kcal`, correct:false}))]);
+        return {gen:true, q:`About how many calories are in one serving of ${f.emoji} ${f.name}?`, opts,
+                exp:`${f.name} is estimated at ~${fmt(f.cal)} kcal for a typical serving. The real value can vary with the recipe and portion size.`};
+    }
+    /* pick 4 foods with clearly different calories */
+    let four = [];
+    for(let tries = 0; tries < 80 && four.length < 4; tries++){
+        four = [];
+        for(const f of shuffle(pool)){
+            if(four.every(x => Math.abs(x.cal - f.cal) >= 40)) four.push(f);
+            if(four.length === 4) break;
+        }
+    }
+    four.forEach(f => usedNames.add(f.name));
+    const target = type === "low"
+        ? four.reduce((m, f) => f.cal < m.cal ? f : m)
+        : four.reduce((m, f) => f.cal > m.cal ? f : m);
+    const sorted = [...four].sort((x, y) => x.cal - y.cal);
+    return {gen:true,
+        q:`Which of these has the ${type === "low" ? "FEWEST" : "MOST"} calories per serving?`,
+        opts: shuffle(four.map(f => ({text:`${f.emoji} ${f.name}`, correct: f === target}))),
+        exp:`Estimates: ${sorted.map(f => `${f.name} ~${fmt(f.cal)} kcal`).join(", ")}.`};
+}
+
+function startQuiz(){
+    const bank = pickBankQuestions(QUIZ_BANK_PER_ROUND).map(item => ({
+        q:item.q, exp:item.exp,
+        opts: shuffle(item.opts.map((text, i) => ({text, correct: i === item.a})))
+    }));
+    const used = new Set();
+    const gens = [];
+    for(let i = 0; i < QUIZ_LEN - bank.length; i++) gens.push(genQuestion(used));
+    quiz = {set: shuffle([...bank, ...gens]), i:0, score:0, answers:[]};
+    renderQuestion();
+}
+
+function renderHistory(){
+    const h = getHistory();
+    const box = $("quizHistory");
+    if(!h.length){
+        box.innerHTML = `<div class="quiz-history"><div class="qh-head"><h3>📜 Past records</h3></div>
+            <p class="qh-note">No records yet. Finish one quiz round to start recording your scores.</p></div>`;
+        return;
+    }
+    const pct = r => r.s / r.n;
+    const avg = h.reduce((s, r) => s + pct(r), 0) / h.length;
+    const best = h.reduce((m, r) => pct(r) > pct(m) ? r : m);
+    const first = h[0], last = h[h.length - 1];
+    const diff = Math.round((pct(last) - pct(first)) * QUIZ_LEN);
+    const when = t => new Date(t).toLocaleString("en-MY", {day:"numeric", month:"short", year:"numeric", hour:"numeric", minute:"2-digit"});
+    box.innerHTML = `
+        <div class="quiz-history">
+            <div class="qh-head">
+                <h3>📜 Past records</h3>
+                <button class="del-btn" id="qhClear">Clear records</button>
+            </div>
+            <div class="qh-stats">
+                <div><strong>${h.length}</strong><span>Attempts</span></div>
+                <div><strong>${(avg * QUIZ_LEN).toFixed(1)}/${QUIZ_LEN}</strong><span>Average score</span></div>
+                <div><strong>${best.s}/${best.n}</strong><span>Best score</span></div>
+                <div><strong>${h.length > 1 ? (diff > 0 ? "+" + diff : diff) : "–"}</strong><span>Compared with first try</span></div>
+            </div>
+            <ol class="qh-list">
+                ${[...h].reverse().slice(0, 10).map((r, i) => `
+                    <li>
+                        <span class="when">${i === 0 ? "🆕 " : ""}${when(r.t)}</span>
+                        <span class="qh-bar" aria-hidden="true"><span style="width:${pct(r) * 100}%"></span></span>
+                        <strong>${r.s}/${r.n}</strong>
+                    </li>`).join("")}
+            </ol>
+            <p class="qh-note">${h.length > 10 ? `Showing the 10 most recent of ${h.length} attempts. ` : ""}Records are saved in this browser only. Other devices or browsers keep their own records.</p>
+        </div>`;
+}
+
+$("quizHistory").addEventListener("click", e => {
+    const btn = e.target.closest("#qhClear");
+    if(!btn) return;
+    if(btn.classList.contains("confirm")){
+        writeJSON(QUIZ_HIST_KEY, []);
+        try{ localStorage.removeItem(QUIZ_KEY); }catch(err){}
+        renderHistory();
+        toast("Quiz records cleared");
+    }else{
+        btn.classList.add("confirm");
+        btn.textContent = "Tap again to clear";
+        setTimeout(() => { if(btn.isConnected){ btn.classList.remove("confirm"); btn.textContent = "Clear records"; } }, 3000);
+    }
+});
+
+function renderQuestion(focus){
+    const item = quiz.set[quiz.i];
+    const best = bestScore();
+    const fresh = unseenCount();
+    $("quizBody").innerHTML = `
+        <div class="quiz-top">
+            <span class="quiz-meta">Question ${quiz.i + 1} / ${quiz.set.length} · Score ${quiz.score}</span>
+            <span class="quiz-best">${best ? `🏆 Best: ${best}/${QUIZ_LEN} · ` : ""}📚 ${fresh} questions not seen yet</span>
+        </div>
+        <div class="quiz-progress" aria-hidden="true"><span style="width:${quiz.i / quiz.set.length * 100}%"></span></div>
+        ${item.gen ? `<span class="quiz-tag">🎲 Calorie challenge</span>` : ""}
+        <h3 class="quiz-q" id="quizQ" tabindex="-1">${esc(item.q)}</h3>
+        <div class="quiz-options" role="group" aria-labelledby="quizQ">
+            ${item.opts.map((o, k) => `
+                <button class="quiz-opt" data-opt="${k}">
+                    <span class="key" aria-hidden="true">${"ABCD"[k]}</span><span>${esc(o.text)}</span>
+                </button>`).join("")}
+        </div>
+        <div id="quizFeedback" aria-live="polite"></div>`;
+    if(focus) $("quizQ").focus({preventScroll:true});
+}
+
+function answerQuiz(k){
+    const item = quiz.set[quiz.i];
+    const chosen = item.opts[k];
+    const ok = chosen.correct;
+    if(ok) quiz.score++;
+    quiz.answers.push({q:item.q, ok, chosen:chosen.text, right:item.opts.find(o => o.correct).text});
+
+    document.querySelectorAll("#quizBody .quiz-opt").forEach((btn, idx) => {
+        btn.disabled = true;
+        const o = item.opts[idx];
+        if(o.correct) btn.classList.add("correct");
+        else if(idx === k) btn.classList.add("wrong");
+        else btn.classList.add("dim");
+    });
+    const last = quiz.i === quiz.set.length - 1;
+    $("quizFeedback").innerHTML = `
+        <div class="quiz-feedback ${ok ? "good" : "bad"}">
+            <strong>${ok ? "✅ Correct!" : "❌ Not quite."}</strong>${esc(item.exp)}
+        </div>
+        <div class="quiz-actions">
+            <button class="main-btn" id="quizNext">${last ? "See results →" : "Next question →"}</button>
+        </div>`;
+    document.querySelector("#quizBody .quiz-meta").textContent = `Question ${quiz.i + 1} / ${quiz.set.length} · Score ${quiz.score}`;
+    document.querySelector("#quizBody .quiz-progress span").style.width = `${(quiz.i + 1) / quiz.set.length * 100}%`;
+    $("quizNext").focus({preventScroll:true});
+}
+
+function finishQuiz(){
+    const {score, set, answers} = quiz;
+    const prevBest = bestScore();
+    const newBest = score > prevBest;
+    addHistory(score, set.length);
+    let msg;
+    if(score === set.length) msg = "Excellent! You really know your nutrition. 🌟";
+    else if(score >= set.length - 1) msg = "Great! Almost perfect.";
+    else if(score >= Math.ceil(set.length / 2)) msg = "Good job! Read the explanations below for the ones you missed.";
+    else msg = "A good start. Every try teaches you something, so let's go again!";
+    $("quizBody").innerHTML = `
+        <div class="quiz-result">
+            <div class="score" id="quizScore" tabindex="-1">${score}<small> / ${set.length}</small></div>
+            <p>${msg}${newBest && prevBest ? " 🏆 New record!" : ""}</p>
+        </div>
+        <ul class="quiz-review">
+            ${answers.map(a => `
+                <li>
+                    <span class="mark ${a.ok ? "ok" : "no"}" aria-label="${a.ok ? "Correct" : "Wrong"}">${a.ok ? "✓" : "✗"}</span>
+                    <div>${esc(a.q)}<small>${a.ok ? "Your answer was right: " + esc(a.right) : "Your answer: " + esc(a.chosen) + " · Correct answer: " + esc(a.right)}</small></div>
+                </li>`).join("")}
+        </ul>
+        <div class="quiz-actions">
+            <button class="main-btn" id="quizRestart">🔄 Try a new set of questions</button>
+        </div>`;
+    $("quizScore").focus({preventScroll:true});
+    renderHistory();
+}
+
+$("quizBody").addEventListener("click", e => {
+    const opt = e.target.closest("[data-opt]");
+    if(opt && !opt.disabled){ answerQuiz(Number(opt.dataset.opt)); return; }
+    if(e.target.closest("#quizNext")){
+        if(quiz.i < quiz.set.length - 1){ quiz.i++; renderQuestion(true); }
+        else finishQuiz();
+        return;
+    }
+    if(e.target.closest("#quizRestart")){ startQuiz(); $("quizQ").focus({preventScroll:true}); }
+});
+
+/* ---------------- INIT ---------------- */
+loadCustom();
+indexFoods();
+loadSelection();
+syncCookState();
+buildGrid();
+renderCategories();
+applyFilter();
+updateCount();
+updateDraft();
+startQuiz();
+renderHistory();
+</script>
+
+</body>
+</html>
