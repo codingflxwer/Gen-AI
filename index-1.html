@@ -516,6 +516,17 @@ header p{
 .source-note a,.source-tag a{color:var(--brand);font-weight:700}
 .food-src{font-size:11px;color:var(--muted);margin-top:-2px}
 
+/* ---------- PROFILE (GENDER) ---------- */
+.profile-row{display:flex;flex-wrap:wrap;align-items:center;gap:10px 12px;margin:14px 0 2px}
+.profile-label{font-size:14px;font-weight:700;color:var(--muted)}
+.seg{display:inline-flex;flex-wrap:nowrap;gap:4px;padding:4px;border-radius:999px;background:var(--surface-2);border:1px solid var(--border)}
+.seg-btn{border:0;background:transparent;padding:8px 14px;border-radius:999px;font-weight:700;font-size:14px;cursor:pointer;color:var(--text);transition:.15s}
+.field .seg{align-self:flex-start}
+.seg-btn:hover{background:var(--brand-soft)}
+.seg-btn.active{background:var(--brand);color:#fff}
+.profile-ref{font-size:13px;font-weight:700;color:var(--brand);font-variant-numeric:tabular-nums}
+@media (max-width:480px){.seg{width:100%}.seg-btn{flex:1;padding:8px 6px;font-size:13px;white-space:nowrap}}
+
 /* ---------- CUSTOM FOOD ---------- */
 .add-hint{margin:-4px 0 14px;font-size:14px;color:var(--muted)}
 .link-btn{
@@ -630,6 +641,15 @@ footer{text-align:center;color:var(--muted);padding:10px 16px 30px;font-size:13p
     <section class="card" aria-labelledby="pickTitle">
         <h2 id="pickTitle">🍴 1. Pick foods & adjust servings</h2>
         <p class="lead">Tap <strong>+ Add</strong>, then use the <strong>+</strong> / <strong>−</strong> buttons to change the number of servings.</p>
+        <div class="profile-row" role="group" aria-label="Choose gender for the daily calorie reference">
+            <span class="profile-label">👤 Daily reference for:</span>
+            <div class="seg" id="genderSeg">
+                <button class="seg-btn" data-gender="female" aria-pressed="false">♀ Female</button>
+                <button class="seg-btn" data-gender="male" aria-pressed="false">♂ Male</button>
+                <button class="seg-btn active" data-gender="none" aria-pressed="true">Not specified</button>
+            </div>
+            <span class="profile-ref" id="profileRef">2,000 kcal/day</span>
+        </div>
 
         <div class="search-wrap">
             <input id="search" class="search-box" type="search" placeholder="🔎 Search foods… (e.g. rice, tea, kuih)" aria-label="Search foods" autocomplete="off">
@@ -683,9 +703,24 @@ footer{text-align:center;color:var(--muted);padding:10px 16px 30px;font-size:13p
             </div>
 
             <div data-pane="manual" hidden>
+                <div class="field" style="margin-bottom:12px">Portion measured by
+                    <div class="seg" id="cfUnitSeg" role="group" aria-label="Portion measured by">
+                        <button type="button" class="seg-btn active" data-unit="size" aria-pressed="true">🍽️ Serving size</button>
+                        <button type="button" class="seg-btn" data-unit="grams" aria-pressed="false">⚖️ Grams</button>
+                    </div>
+                </div>
                 <div class="form-grid">
-                    <label class="field">Calories (kcal) per serving
+                    <label class="field" data-unit-pane="size">Calories (kcal) per serving
                         <input id="cfCal" type="number" min="0" max="3000" step="5" inputmode="numeric" placeholder="e.g. 350">
+                    </label>
+                    <label class="field" data-unit-pane="size">Serving size you ate
+                        <select id="cfManSize"></select>
+                    </label>
+                    <label class="field" data-unit-pane="grams" hidden>Calories (kcal) per 100 g
+                        <input id="cfCal100" type="number" min="0" max="900" step="1" inputmode="numeric" placeholder="e.g. 250">
+                    </label>
+                    <label class="field" data-unit-pane="grams" hidden>Amount you ate (g)
+                        <input id="cfGrams" type="number" min="1" max="2000" step="1" inputmode="numeric" placeholder="e.g. 150">
                     </label>
                     <label class="field">Category
                         <select id="cfCat"></select>
@@ -695,7 +730,7 @@ footer{text-align:center;color:var(--muted);padding:10px 16px 30px;font-size:13p
                     <label><input type="checkbox" id="cfFried"> Fried / oily</label>
                     <label><input type="checkbox" id="cfSweet"> High in sugar</label>
                 </div>
-                <p class="ai-status" style="margin-top:10px">Tip: calories are usually printed on the packaging label (“Energy … kcal”).</p>
+                <p class="ai-status" id="cfUnitTip" style="margin-top:10px">Tip: use the “per serving” energy value on the packaging label, then pick how big your portion was.</p>
             </div>
 
             <div class="preview" id="cfPreview">
@@ -726,7 +761,7 @@ footer{text-align:center;color:var(--muted);padding:10px 16px 30px;font-size:13p
                 <li><strong>Actual calories can differ</strong> by about 20–30% depending on the shop, recipe, serving size, and the oil and sugar used.</li>
                 <li><strong>⭐ My foods:</strong> values come from an AI estimate, an estimate by food type, or a number you entered. They are not official data. For packaged foods, the nutrition label (“Energy”) is the most accurate source.</li>
                 <li><strong>Activity times:</strong> calculated from the <a href="https://pacompendium.com" target="_blank" rel="noopener">Compendium of Physical Activities</a> for an adult of about 60 kg. Lighter or heavier people burn energy at different rates.</li>
-                <li><strong>The 2,000 kcal daily reference</strong> is a general value used on nutrition labels. Real needs depend on age, sex, body size and activity level.</li>
+                <li><strong>Daily reference:</strong> about 2,000 kcal for women and 2,500 kcal for men, general values used by health bodies such as the <a href="https://www.bhf.org.uk/informationsupport/heart-matters-magazine/nutrition/how-many-calories-should-i-eat-a-day" target="_blank" rel="noopener">British Heart Foundation</a>. “Not specified” uses 2,000 kcal, the value on nutrition labels. Real needs depend on age, body size and activity level.</li>
             </ul>
         </details>
 
@@ -765,7 +800,7 @@ footer{text-align:center;color:var(--muted);padding:10px 16px 30px;font-size:13p
                         <span class="unit">kcal</span>
                     </div>
                 </div>
-                <div class="ring-caption">≈ <strong id="dailyPct">0%</strong> of the average daily reference (2,000 kcal)</div>
+                <div class="ring-caption">≈ <strong id="dailyPct">0%</strong> of the daily reference for <span id="refLabel">adults (2,000 kcal)</span></div>
             </div>
 
             <div class="panel">
@@ -1056,7 +1091,12 @@ const cooks = [
     {id:"ringan", label:"Steamed / boiled / grilled", m:0.85}
 ];
 
-const DAILY_REF = 2000;
+const PROFILES = {female:{ref:2000}, male:{ref:2500}, none:{ref:2000}};
+const REF_LABELS = {"female": "women (2,000 kcal)", "male": "men (2,500 kcal)", "none": "adults (2,000 kcal)"};
+const GENDER_KEY = "afac-gender";
+let gender = "none";
+try{ const g = localStorage.getItem(GENDER_KEY); if(PROFILES[g]) gender = g; }catch(e){}
+const dailyRef = () => PROFILES[gender].ref;
 const MAX_QTY = 20;
 const STORE_KEY = "afac-en-selection-v1";
 const OLD_STORE_KEY = "afac-en-selection-v0";
@@ -1377,8 +1417,28 @@ fillSelect($("cfSize"), sizes, s => s.label);
 fillSelect($("cfAiSize"), sizes, s => s.label);
 fillSelect($("cfCook"), cooks, c => c.label);
 fillSelect($("cfCat"), catDefs, c => `${c.emoji} ${c.label}`);
+$("cfCat").value = "Makanan";
 $("cfSize").value = "sederhana";
 $("cfAiSize").value = "sederhana";
+fillSelect($("cfManSize"), sizes, s => s.label);
+$("cfManSize").value = "sederhana";
+
+/* Manual entry: measure by serving size OR grams (only one at a time) */
+let manualUnit = "size";
+const UNIT_TIPS = {size:"Tip: use the “per serving” energy value on the packaging label, then pick how big your portion was.", grams:"Tip: labels usually show energy “per 100 g”. Weigh your portion or use the pack weight."};
+$("cfUnitSeg").addEventListener("click", e => {
+    const b = e.target.closest("[data-unit]");
+    if(!b || b.dataset.unit === manualUnit) return;
+    manualUnit = b.dataset.unit;
+    document.querySelectorAll("#cfUnitSeg [data-unit]").forEach(x => {
+        const on = x.dataset.unit === manualUnit;
+        x.classList.toggle("active", on);
+        x.setAttribute("aria-pressed", on);
+    });
+    document.querySelectorAll("[data-unit-pane]").forEach(p => { p.hidden = p.dataset.unitPane !== manualUnit; });
+    $("cfUnitTip").textContent = UNIT_TIPS[manualUnit];
+    updateDraft();
+});
 
 /* Guess the food type from the name (for the estimate tab) */
 function guessType(name){
@@ -1405,7 +1465,7 @@ let typeTouched = false;
 let cookTouched = false;
 $("cfType").addEventListener("change", () => { typeTouched = true; syncCookState(); updateDraft(); });
 $("cfCook").addEventListener("change", () => { cookTouched = true; updateDraft(); });
-["cfSize","cfCal","cfCat","cfFried","cfSweet","cfAiSize"].forEach(id => {
+["cfSize","cfCal","cfCal100","cfGrams","cfManSize","cfCat","cfFried","cfSweet","cfAiSize"].forEach(id => {
     $(id).addEventListener("input", updateDraft);
     $(id).addEventListener("change", updateDraft);
 });
@@ -1463,11 +1523,23 @@ function currentDraft(){
                 src:"est", note:`Estimate by type: ${type.label.toLowerCase()}, ${size.short} size, ${cook.label.toLowerCase()}.`};
     }
     if(activeTab === "manual"){
-        const calStr = $("cfCal").value;
-        if(calStr === "") return {name, cal:null, cat:$("cfCat").value, emoji:catEmoji[$("cfCat").value], t:"", note:"Enter the number of calories."};
-        const cal = Math.round(Number(calStr));
+        const cat = $("cfCat").value, emoji = catEmoji[cat];
         const t = ($("cfFried").checked ? "g" : "") + ($("cfSweet").checked ? "m" : "");
-        return {name, cal, cat:$("cfCat").value, emoji:catEmoji[$("cfCat").value], t, src:"manual", note:"Calories entered by you."};
+        if(manualUnit === "grams"){
+            const c100Str = $("cfCal100").value, gStr = $("cfGrams").value;
+            if(c100Str === "" || gStr === "") return {name, cal:null, cat, emoji, t:"", note:"Enter the calories per 100 g and how many grams you ate."};
+            const c100 = Number(c100Str), g = Math.round(Number(gStr));
+            if(!(c100 >= 0 && c100 <= 900)) return {name, cal:null, cat, emoji, t:"", note:"Calories per 100 g can’t be more than 900 kcal (pure fat is about 900)."};
+            if(!(g >= 1 && g <= 2000)) return {name, cal:null, cat, emoji, t:"", note:"Amount must be between 1 and 2,000 g."};
+            const cal = Math.round(c100 * g / 100);
+            return {name: name ? `${name} (${g} g)` : name, cal, cat, emoji, t, src:"manual", note:`Entered by you: ${c100} kcal per 100 g × ${g} g.`};
+        }
+        const calStr = $("cfCal").value;
+        if(calStr === "") return {name, cal:null, cat, emoji, t:"", note:"Enter the calories per serving."};
+        const base = Math.round(Number(calStr));
+        const sz = sizes.find(x => x.id === $("cfManSize").value) || sizes[1];
+        const cal = Math.round(base * sz.m / 5) * 5;
+        return {name, cal, cat, emoji, t, src:"manual", note:`Entered by you: ${base} kcal per serving, ${sz.short} size.`};
     }
     /* ai */
     const key = name + "|" + $("cfAiSize").value;
@@ -1520,7 +1592,7 @@ function addCustomFood(){
     saveCustom();
     saveSelection();
     /* reset form */
-    $("cfName").value = ""; $("cfCal").value = "";
+    $("cfName").value = ""; $("cfCal").value = ""; $("cfCal100").value = ""; $("cfGrams").value = "";
     $("cfFried").checked = false; $("cfSweet").checked = false;
     typeTouched = false; cookTouched = false;
     aiDraft = null; aiKey = "";
@@ -1657,10 +1729,11 @@ function generateAdvice(scroll = true){
 
     /* ---- Level & ring ---- */
     let level, levelClass, advice;
-    if(total < 300){
+    const lightMax = Math.round(dailyRef() * 0.15), modMax = Math.round(dailyRef() * 0.35);
+    if(total < lightMax){
         level = "Light / Snack"; levelClass = "level-low";
         advice = `Total ${fmt(total)} kcal: suitable as a snack or light meal.`;
-    }else if(total <= 700){
+    }else if(total <= modMax){
         level = "Moderate Meal"; levelClass = "level-mid";
         advice = `Total ${fmt(total)} kcal: a typical range for one main meal for most people.`;
     }else{
@@ -1673,7 +1746,8 @@ function generateAdvice(scroll = true){
     pill.textContent = level;
     pill.className = "level-pill " + levelClass;
 
-    const pct = Math.round(total / DAILY_REF * 100);
+    const pct = Math.round(total / dailyRef() * 100);
+    $("refLabel").textContent = REF_LABELS[gender];
     $("resTotalCal").textContent = fmt(total);
     $("dailyPct").textContent = pct + "%";
     $("ringWrap").setAttribute("aria-label", `${total} kcal, about ${pct} percent of the daily reference`);
@@ -1781,12 +1855,13 @@ function buildTips(t, byCat, total){
     if(dessertCal > 0 && dessertCal / (total || 1) > 0.4){
         tips.push({ico:"🍰", title:"Mostly dessert", text:"Enjoy it! If you like, share with a friend or pick a smaller size."});
     }
-    if(total > 700){
+    if(total > dailyRef() * 0.35){
         tips.push({ico:"⚖️", title:"Balance your next meal", text:"Choose something lighter like soup, salad or fruit at your next meal. No need to skip meals."});
-    }else if(total < 300 && total > 0){
+    }else if(total < dailyRef() * 0.15 && total > 0){
         tips.push({ico:"⏰", title:"A good snack", text:"Good for keeping your energy up between meals. If this is a main meal, add protein & vegetables."});
     }
-    return tips.slice(0,5);
+    const genderTip = gender === "female" ? {ico:"🩸", title:"Iron matters for women", text:"Women need more iron than men because of monthly blood loss. Include iron-rich foods like leafy greens, legumes, eggs or lean meat."} : gender === "male" ? {ico:"💧", title:"Men need a little more fluid", text:"Men are generally advised to drink more fluids than women each day, so keep a bottle of plain water nearby."} : null;
+    return genderTip ? [...tips.slice(0,4), genderTip] : tips.slice(0,5);
 }
 
 function renderIntensityFilter(){
@@ -1856,7 +1931,7 @@ $("result").addEventListener("click", e => {
 $("copyBtn").addEventListener("click", async () => {
     const t = computeTotals();
     const lines = t.keys.map(i => `• ${F(i).name}${F(i).custom ? " (estimate)" : ""} × ${selectedQty[i]} = ${F(i).cal*selectedQty[i]} kcal`);
-    const text = `🥗 AI Food & Activity Coach\n${lines.join("\n")}\n🔥 Total: ${t.cal} kcal (≈${Math.round(t.cal/DAILY_REF*100)}% of the 2,000 kcal daily reference)`;
+    const text = `🥗 AI Food & Activity Coach\n${lines.join("\n")}\n🔥 Total: ${t.cal} kcal (≈${Math.round(t.cal/dailyRef()*100)}% of the ${fmt(dailyRef())} kcal daily reference)`;
     try{
         await navigator.clipboard.writeText(text);
         toast("Summary copied 📋");
@@ -2223,6 +2298,26 @@ $("quizBody").addEventListener("click", e => {
     }
     if(e.target.closest("#quizRestart")){ startQuiz(); $("quizQ").focus({preventScroll:true}); }
 });
+
+/* ---------------- GENDER PROFILE ---------------- */
+function renderGender(){
+    document.querySelectorAll("#genderSeg [data-gender]").forEach(b => {
+        const on = b.dataset.gender === gender;
+        b.classList.toggle("active", on);
+        b.setAttribute("aria-pressed", on);
+    });
+    $("profileRef").textContent = `${fmt(dailyRef())} kcal/day`;
+}
+$("genderSeg").addEventListener("click", e => {
+    const b = e.target.closest("[data-gender]");
+    if(!b || b.dataset.gender === gender) return;
+    gender = b.dataset.gender;
+    try{ localStorage.setItem(GENDER_KEY, gender); }catch(err){}
+    renderGender();
+    refreshResultIfShown();
+    toast(`Daily reference set to ${fmt(dailyRef())} kcal/day`);
+});
+renderGender();
 
 /* ---------------- INIT ---------------- */
 loadCustom();
